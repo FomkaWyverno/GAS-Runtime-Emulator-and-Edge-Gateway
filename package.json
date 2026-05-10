@@ -1,0 +1,16 @@
+{
+  "name": "gas-runtime-emulator",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "WyvernoTeam",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
