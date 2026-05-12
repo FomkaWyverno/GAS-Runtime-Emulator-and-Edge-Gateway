@@ -17,5 +17,8 @@
     "ts-jest": "^29.4.9",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "sync-fetch": "^0.6.0"
   }
 }
