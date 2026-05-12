@@ -48,6 +48,11 @@
       <td style="padding: 10px; border: 1px solid #ddd; background-color: #fff9c4; color: #856404; font-weight: bold; text-align: center;">Частково</td>
       <td style="padding: 10px; border: 1px solid #ddd;">Підтримує лише основні токени (<code>y, M, d, H, h, m, s, a</code>). Не підтримує екранування лапками та специфічні токени на кшталт <code>W, D, F, k, K</code>.</td>
     </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>newBlob</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Реалізовано всі перевантаження для рядків та масивів байтів.</td>
+    </tr>
   </tbody>
 </table>
 

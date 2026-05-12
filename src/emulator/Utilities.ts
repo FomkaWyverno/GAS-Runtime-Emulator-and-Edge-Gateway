@@ -1,4 +1,5 @@
 import crypto from 'node:crypto'
+import { Blob } from './Blob.js';
 
 type DigestAlgorithm = typeof Utilities.DigestAlgorithm[keyof typeof Utilities.DigestAlgorithm]
 type Charset = typeof Utilities.Charset[keyof typeof Utilities.Charset]
@@ -152,5 +153,21 @@ export class Utilities {
         const regex = new RegExp(Object.keys(map).join('|'), 'g');
 
         return format.replace(regex, matched => map[matched]);
+    }
+    
+    /**
+     * Create a new Blob object from a string, content type, and name.
+     * Blobs are used in many Apps Script APIs that take binary data as input.
+     * @param data The string for the blob, assumed UTF-8.
+     * @param contentType The content type of the blob - can be null.
+     * @param name The name of the blob - can be null.
+     * @returns The newly created Blob.
+     */
+    newBlob(
+        data: string | number[],
+        contentType: string | null = null,
+        name: string | null = null
+    ): Blob {
+        return new Blob(data, contentType, name);
     }
 }
