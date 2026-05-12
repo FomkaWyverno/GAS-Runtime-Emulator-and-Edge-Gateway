@@ -109,4 +109,48 @@ export class Utilities {
     getUuid(): string {
         return crypto.randomUUID();
     }
+
+    /**
+     * Formats date according to specification described in Java SE SimpleDateFormat class.
+     * Please visit the specification at http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+     */
+    formatDate(date: Date, timeZone: string, format: string): string {
+        const options: Intl.DateTimeFormatOptions = {
+            timeZone,
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+        };
+
+        const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(date);
+        const values: Record<keyof Intl.DateTimeFormatPartTypesRegistry, string> = parts.reduce((acc, p) => (acc[p.type] = p.value, acc), {} as any);
+
+        const longMonth = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date);
+        const shortMonth = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date);
+
+        const hours24 = parseInt(values.hour, 10);
+        const hours12 = hours24 % 12 || 12;
+
+        const map: { [key: string]: string } = {
+            'yyyy': values.year,
+            'yy': values.year.slice(-2),
+            'MMMM': longMonth,
+            'MMM': shortMonth,
+            'MM': values.month,
+            'M': parseInt(values.month, 10).toString(),
+            'dd': values.day,
+            'd': parseInt(values.day, 10).toString(),
+            'HH': values.hour,
+            'H': hours24.toString(),
+            'hh': hours12.toString().padStart(2, '0'),
+            'h': hours12.toString(),
+            'mm': values.minute,
+            'ss': values.second,
+            'a': hours24 >= 12 ? 'PM' : 'AM'
+        };
+
+        const regex = new RegExp(Object.keys(map).join('|'), 'g');
+
+        return format.replace(regex, matched => map[matched]);
+    }
 }
