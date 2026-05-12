@@ -53,6 +53,47 @@
 
 ---
 
+## Blob
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>copyBlob()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Створює глибоку копію буфера даних.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getAs(type)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #fff9c4; color: #856404; font-weight: bold; text-align: center;">Частково</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Змінює MIME-тип об'єкта. Конвертація вмісту (наприклад, Doc до PDF) не підтримується.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getDataAsString(charset)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Підтримує зміну кодування (utf8, ascii, base64).</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>isGoogleType()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #ffcccc; color: #cc0000; font-weight: bold; text-align: center;">Ні</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Завжди повертає <code>false</code>, оскільки емулятор працює локально.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>setContentTypeFromExtension()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #fff9c4; color: #856404; font-weight: bold; text-align: center;">Частково</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Автоматично визначає тип для основних форматів (json, txt, html, png, jpg).</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
 ## Детальний опис часткової підтримки
 
 Якщо метод позначений як **"Частково"**, нижче наведено конкретний перелік того, що саме в ньому реалізовано:
