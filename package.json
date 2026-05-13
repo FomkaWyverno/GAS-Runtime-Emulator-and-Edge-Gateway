@@ -19,6 +19,7 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "mysql2": "^3.22.3",
     "sync-fetch": "^0.6.0"
   }
 }

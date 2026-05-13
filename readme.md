@@ -105,6 +105,47 @@
 
 ---
 
+## CacheService & Cache
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getScriptCache()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Повертає інстанс кешу. Реалізовано як Singleton у межах життєвого циклу емулятора.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>get(key)</code> / <code>getAll(keys)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Синхронне отримання значень. Автоматично повертає <code>null</code>, якщо термін дії (expirationInSeconds) вичерпано.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>put(key, value, expirationInSeconds)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Сувора перевірка лімітів: ключ до 250 симв., значення до 100KB. Реалізовано ліміт у 1000 записів із витісненням за expirationInSeconds.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>putAll(values, expirationInSeconds)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Масовий запис об'єкта ключ-значення з валідацією кожного елемента.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>remove(key)</code> / <code>removeAll(keys)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Видалення одного або декількох записів зі сховища.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
 ## Детальний опис обмежень
 
 ### `UrlFetchApp.fetch`
