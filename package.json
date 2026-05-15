@@ -6,6 +6,7 @@
   "author": "WyvernoTeam",
   "type": "module",
   "scripts": {
+    "build": "tsx && cpx \"src/sql/**/*.sql\" dist/sql",
     "dev": "tsx src/index.ts",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "npm test -- --watch"
