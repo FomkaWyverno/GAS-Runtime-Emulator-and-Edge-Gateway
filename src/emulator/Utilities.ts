@@ -1,23 +1,27 @@
 import crypto from 'node:crypto'
 import { Blob } from './Blob.js';
 
-type DigestAlgorithm = typeof Utilities.DigestAlgorithm[keyof typeof Utilities.DigestAlgorithm]
-type Charset = typeof Utilities.Charset[keyof typeof Utilities.Charset]
+const DigestAlgorithmEnum = {
+    MD2: "md2",
+    MD5: "md5",
+    SHA_1: "sha1",
+    SHA_256: "sha256",
+    SHA_384: "sha384",
+    SHA_512: "sha512"
+};
+
+const CharsetEnum = {
+    US_ASCII: "ascii",
+    UTF_8: "utf8"
+}
+
+type DigestAlgorithm = typeof DigestAlgorithmEnum[keyof typeof DigestAlgorithmEnum]
+type Charset = typeof CharsetEnum[keyof typeof CharsetEnum]
 
 export class Utilities {
-    public static readonly DigestAlgorithm = {
-        MD2: "md2",
-        MD5: "md5",
-        SHA_1: "sha1",
-        SHA_256: "sha256",
-        SHA_384: "sha384",
-        SHA_512: "sha512"
-    } as const
+    public static DigestAlgorithm = DigestAlgorithmEnum;
 
-    public static readonly Charset = {
-        US_ASCII: "ascii",
-        UTF_8: "utf8"
-    } as const;
+    public static Charset = CharsetEnum;
 
     /**
      * Compute a digest using the specified algorithm on the specified String value with the given character set.
@@ -26,7 +30,7 @@ export class Utilities {
      * @param charset   A Charset representing the input character set.
      * @returns A byte[] representing the output digest.
      */
-    computeDigest(
+    public static computeDigest(
         algorithm: DigestAlgorithm,
         value: string | number[],
         charset: Charset = Utilities.Charset.UTF_8
@@ -52,7 +56,7 @@ export class Utilities {
      * @param charset A Charset specifying the charset of the input.
      * @returns The base-64 encoded representation of the input string with the given Charset.
      */
-    base64Encode(data: string | number[], charset: Charset = Utilities.Charset.UTF_8): string {
+    public static base64Encode(data: string | number[], charset: Charset = Utilities.Charset.UTF_8): string {
         const buffer = Array.isArray(data)
             ? Buffer.from(new Int8Array(data))
             : Buffer.from(data, charset as BufferEncoding)
@@ -66,7 +70,7 @@ export class Utilities {
      * @param charset A Charset specifying the charset of the input.
      * @returns Byte[] — The raw data represented by the base-64 encoded argument as a byte array.
      */
-    base64Decode(encoded: string, charset: Charset = Utilities.Charset.UTF_8): number[] {
+    public static base64Decode(encoded: string, charset: Charset = Utilities.Charset.UTF_8): number[] {
         const buffer = Buffer.from(encoded, 'base64');
         return Array.from(new Int8Array(buffer));
     }
@@ -81,8 +85,8 @@ export class Utilities {
      * @param charset A Charset specifying the charset of the input.
      * @returns The base-64 web-safe encoded representation of the input string with the given Charset.
      */
-    base64EncodeWebSafe(data: string | number[], charset: Charset = Utilities.Charset.UTF_8): string {
-        const base64 = this.base64Encode(data, charset);
+    public static base64EncodeWebSafe(data: string | number[], charset: Charset = Utilities.Charset.UTF_8): string {
+        const base64 = Utilities.base64Encode(data, charset);
         return base64
             .replace(/\+/g, '-')
             .replace(/\//g, '_');
@@ -94,11 +98,11 @@ export class Utilities {
      * @param charset A Charset specifying the charset of the input.
      * @returns The raw data represented by the base-64 web-safe encoded argument as a byte array.
      */
-    base64DecodeWebSafe(encoded: string, charset: Charset = Utilities.Charset.UTF_8): number[] {
+    public static base64DecodeWebSafe(encoded: string, charset: Charset = Utilities.Charset.UTF_8): number[] {
         const standartBase64 = encoded
             .replace(/-/g, '+')
             .replace(/_/g, '/');
-        return this.base64Decode(standartBase64, charset);
+        return Utilities.base64Decode(standartBase64, charset);
     }
 
     /**
@@ -107,7 +111,7 @@ export class Utilities {
      * As such, do not use in situations where guaranteed uniqueness is required.
      * @returns A string representation of the UUID.
      */
-    getUuid(): string {
+    public static getUuid(): string {
         return crypto.randomUUID();
     }
 
@@ -115,7 +119,7 @@ export class Utilities {
      * Formats date according to specification described in Java SE SimpleDateFormat class.
      * Please visit the specification at http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
      */
-    formatDate(date: Date, timeZone: string, format: string): string {
+    public static formatDate(date: Date, timeZone: string, format: string): string {
         const options: Intl.DateTimeFormatOptions = {
             timeZone,
             year: 'numeric', month: '2-digit', day: '2-digit',
@@ -154,7 +158,7 @@ export class Utilities {
 
         return format.replace(regex, matched => map[matched]);
     }
-    
+
     /**
      * Create a new Blob object from a string, content type, and name.
      * Blobs are used in many Apps Script APIs that take binary data as input.
@@ -163,7 +167,7 @@ export class Utilities {
      * @param name The name of the blob - can be null.
      * @returns The newly created Blob.
      */
-    newBlob(
+    public static newBlob(
         data: string | number[],
         contentType: string | null = null,
         name: string | null = null

@@ -1,5 +1,8 @@
 {
     "database": {
         "url": "mysql://username:password@host:port/database_name"
+    },
+    "gas": {
+        "activeSpreadsheetId": "activeSpreadsheetId"
     }
 }

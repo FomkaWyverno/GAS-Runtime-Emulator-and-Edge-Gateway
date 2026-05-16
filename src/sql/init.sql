@@ -1,6 +1,7 @@
--- Таблиця для аркушів
+-- Аркуші
 CREATE TABLE IF NOT EXISTS sheets (
     id INT PRIMARY KEY AUTOINCREMENT,
+    sheet_id INT NOT NULL,
     spreadsheet_id VARCHAR(255) NOT NULL,
     name TEXT NOT NULL,
     sheet_index INT NOT NULL

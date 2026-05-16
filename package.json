@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "mysql2": "^3.22.3",
-    "sync-fetch": "^0.6.0"
+    "sync-fetch": "^0.6.0",
+    "synckit": "^0.11.12"
   }
 }

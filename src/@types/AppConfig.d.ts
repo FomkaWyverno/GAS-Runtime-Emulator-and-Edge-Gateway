@@ -1,5 +1,8 @@
 export interface AppConfig {
-    database: {
+    database?: {
         url?: string,
+    },
+    gas?: {
+        activeSpreadsheetId?: string
     }
 }
