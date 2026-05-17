@@ -119,7 +119,7 @@
     <tr>
       <td style="padding: 10px; border: 1px solid #ddd;"><code>getScriptCache()</code></td>
       <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
-      <td style="padding: 10px; border: 1px solid #ddd;">Повертає інстанс кешу. Реалізовано як Singleton у межах життєвого циклу емулятора.</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Повертає інстанс кешу. Реалізовано як Singleton у межах життєвого циклу䔋 емулятора.</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 1px solid #ddd;"><code>get(key)</code> / <code>getAll(keys)</code></td>
@@ -146,6 +146,145 @@
 
 ---
 
+## SpreadsheetApp
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод / Об'єкт</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>openById(id)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Перевіряє існування таблиці синхронним запитом до MySQL. Кешує знайдені інстанси таблиць у внутрішній <code>Map</code>.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getActive()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Повертає поточну активну таблицю на основі параметра ідентифікатора з файлу конфігурації <code>config.json</code>.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>flush()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Працює як безпечна порожня функція-заглушка (no-op), оскільки всі операції запису в емуляторі виконуються в базу даних миттєво.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getUi()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #ffcccc; color: #cc0000; font-weight: bold; text-align: center;">Ні</td>
+      <td style="padding: 10px; border: 1px solid #ddd;"><b>Не підтримується.</b> Завжди викидає виключення, оскільки емулятор призначений для роботи в консольному (headless) середовищі.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>Menu</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #ffcccc; color: #cc0000; font-weight: bold; text-align: center;">Ні</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Методи <code>addItem</code> та <code>addToUi</code> викидають помилки виконання, інтерфейси користувача ігноруються.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## PropertiesService & Properties
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getScriptProperties()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Реалізовано за патерном Singleton. Повертає глобальний екземпляр сховища для поточного процесу.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getProperty(key)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Здійснює точковий пошук значення в MySQL за індексованим первинним ключем. Повертає <code>null</code>, якщо запис відсутній.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>setProperty(key, value)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Атомарний UPSERT-запит (<code>ON DUPLICATE KEY UPDATE</code>). Забезпечує збереження та оновлення даних за один цикл. Підтримує ланцюжкові виклики (chaining).</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## ContentService & TextOutput
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод / Властивість</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>createTextOutput(content)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Створює повноцінний об'єкт-контейнер текстових відповідей <code>TextOutput</code> для Webhook-запитів.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>MimeType</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Підтримка оригінальної типізації даних: <code>CSV</code>, <code>ICAL</code>, <code>JAVASCRIPT</code>, <code>JSON</code>, <code>TEXT</code>, <code>VCARD</code>.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getContent()</code> / <code>setContent()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Отримання та перезапис текстового контенту відповіді. Метод встановлення підтримує chaining.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getMimeType()</code> / <code>setMimeType()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Збереження та валідація форматів вихідних файлів відповідно до переліку <code>MimeType</code>.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>append(content)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Синхронно дописує вказаний текст у кінець існуючого буфера контенту.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Browser
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод / Властивість</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>Buttons</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Прокидає нативний набір констант для кнопок діалогових вікон (<code>ButtonSet</code>): OK, YES_NO тощо.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>msgBox()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #ffcccc; color: #cc0000; font-weight: bold; text-align: center;">Ні</td>
+      <td style="padding: 10px; border: 1px solid #ddd;"><b>Не підтримується.</b> Генерує фатальну помилку через роботу емулятора в non-UI оточенні.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
 ## Детальний опис обмежень
 
 ### `UrlFetchApp.fetch`
@@ -166,3 +305,7 @@
 Емуляція базується на `Intl.DateTimeFormat`:
 * **Токени**: `yyyy`, `yy`, `MMMM`, `MMM`, `MM`, `M`, `dd`, `d`, `HH`, `H`, `hh`, `h`, `mm`, `ss`, `a`.
 * **Обмеження**: Не підтримуються складні токени (тижні `w`, мілісекунди `S`) та екранування тексту лапками.
+
+### `Properties.setProperty`
+
+* **MySQL Синтаксис**: На відміну від стандартних послідовних запитів перевірки, використовує швидку атомарну конструкцію бази даних `VALUES(property_values)`. Назви колонок повністю захищені від зарезервованих слів SQL зворотними лапками (backticks).
