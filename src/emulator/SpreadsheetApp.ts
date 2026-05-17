@@ -20,7 +20,7 @@ export class SpreadsheetApp {
         if (cacheSpreadsheet) return cacheSpreadsheet;
         
         const sql = 'SELECT EXISTS (SELECT 1 FROM `sheets` WHERE `spreadsheet_id` = ? LIMIT 1) AS `exists`;';
-        const result = Database.query<[{ exists: number }]>(sql, [id]);
+        const result = Database.query<{ exists: number }>(sql, [id]);
         const isSpreadsheetExists = Boolean(result[0]?.exists);
 
         if (isSpreadsheetExists) {

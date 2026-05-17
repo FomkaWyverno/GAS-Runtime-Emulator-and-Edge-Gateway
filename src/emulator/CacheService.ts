@@ -1,7 +1,7 @@
 export class CacheService {
-    private scriptCache: Cache | null = null;
+    private static scriptCache: Cache | null = null;
 
-    public getScriptCache(): Cache {
-        return this.scriptCache || (this.scriptCache = new Cache());
+    public static getScriptCache(): Cache {
+        return CacheService.scriptCache || (CacheService.scriptCache = new Cache());
     }
 }

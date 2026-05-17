@@ -11,7 +11,7 @@ const workerPath = path.resolve(__dirname,'DatabaseWorker.js');
 const runSyncQuerySQLFn = createSyncFn(workerPath);
 
 class Database {
-    public query<T = any>(sql: string, params?: any[]): T {
+    public query<T = any>(sql: string, params?: any[]): T[] {
         const request: DatabaseParams = { sql, params };
         return runSyncQuerySQLFn(request);
     }
