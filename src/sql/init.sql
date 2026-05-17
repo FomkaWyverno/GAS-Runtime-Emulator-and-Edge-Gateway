@@ -1,11 +1,12 @@
 -- Аркуші
 CREATE TABLE IF NOT EXISTS sheets (
-    id INT PRIMARY KEY AUTOINCREMENT,
     sheet_id INT NOT NULL,
     spreadsheet_id VARCHAR(255) NOT NULL,
     name TEXT NOT NULL,
-    sheet_index INT NOT NULL
-);
+    sheet_index INT NOT NULL,
+
+    PRIMARY KEY (sheet_id, spreadsheet_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Таблиця для клітинок
 CREATE TABLE IF NOT EXISTS cells (
@@ -15,8 +16,16 @@ CREATE TABLE IF NOT EXISTS cells (
     value TEXT,
     value_type VARCHAR(255),
     PRIMARY KEY (sheet_id, row, col),
-    FOREIGN KEY (sheet_id) REFERENCES sheets(id) ON DELETE CASCADE
+    FOREIGN KEY (sheet_id) REFERENCES sheets(sheet_id, spreadsheet_id) ON DELETE CASCADE
 
     -- Індексація
     INDEX idx_range_lookup (sheet_id, row, col)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ПропертіСервіс
+CREATE TABLE IF NOT EXISTS `script_properties` (
+    `property_key` VARCHAR(255) NOT NULL,
+    `property_value` TEXT NOT NULL,
+    
+    PRIMARY KEY (`property_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

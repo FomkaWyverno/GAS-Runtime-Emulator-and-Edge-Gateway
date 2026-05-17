@@ -51,4 +51,8 @@ export class SpreadsheetApp {
     public static getUi(): void {
         throw new Error("GAS Emulator not support UI");
     }
+
+    public static flush(): void {
+        return; // Заглушка
+    }
 }
