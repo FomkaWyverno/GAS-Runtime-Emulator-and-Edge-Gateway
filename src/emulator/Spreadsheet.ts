@@ -1,13 +1,38 @@
 import Database from "../core/database/Database.js";
 import { Sheet } from "./Sheet.js";
 
-export class Spreadsheet {
+interface SheetEntity {
+    sheet_id: number;
+    name: string;
+}
 
-    private readonly sheetMap: Map<string, Sheet> = new Map();
+export class Spreadsheet {
+    private readonly sheetMap: Map<number, Sheet> = new Map();
+    private isLoaded = false;;
 
     constructor(
         private readonly id: string
     ) {}
+
+    private getSheetFromEntity(entity: SheetEntity | undefined): Sheet | null {
+        return entity !== undefined ? new Sheet(entity.sheet_id, entity.name) : null
+    }
+
+    private loadSheetsIfNeeded(): void {
+        if (this.isLoaded) return;
+
+        const sql = 'SELECT `sheet_id`, `name` FROM `sheets` WHERE `spreadsheet` = ? ORDER BY `sheet_index` ASC;';
+        const entities = Database.query<SheetEntity>(sql, [this.getId()]);
+
+        for (const entity of entities) {
+            const sheet = this.getSheetFromEntity(entity);
+            if (sheet) {
+                this.sheetMap.set(entity.sheet_id, sheet);
+            }
+        }
+
+        this.isLoaded = true;
+    }
 
     /**
      * Gets a unique identifier for this spreadsheet.
@@ -23,22 +48,34 @@ export class Spreadsheet {
      * Returns a sheet with the given name.
      * If multiple sheets have the same name, the leftmost one is returned.
      * Returns null if there is no sheet with the given name.
-     * @param name 
-     * @returns 
+     * @param name The name of the sheet to get.
+     * @returns The sheet with the given name, or null if no sheet is found.
      */
     public getSheetByName(name: string): Sheet | null {
-        const cacheSheet = this.sheetMap.get(name);
-        if (cacheSheet) return cacheSheet;
-
-        const sql = 'SELECT `sheet_id`, `name` WHERE `spreadsheet_id` = ? AND `name` = ? LIMIT 1;';
-        const result = Database.query<{sheet_id: number, name: string}>(sql, [this.getId(), name]);
-
-        if (result[0]) {
-            const sheet = new Sheet(result[0].sheet_id, result[0].name);
-            this.sheetMap.set(name, sheet);
-            return sheet;
-        } 
-
+        this.loadSheetsIfNeeded();
+        for (const sheet of this.sheetMap.values()) {
+            if (sheet.getName() === name) return sheet;
+        }
         return null;
+    }
+
+    /**
+     * Gets the sheet with the given ID. Use Sheet.getSheetId().
+     * @param id The ID of the sheet to get.
+     * @returns The sheet with the given ID or null if no sheet is found.
+     */
+    public getSheetById(id: number): Sheet | null {
+        this.loadSheetsIfNeeded();
+        const sheet = this.sheetMap.get(id);
+        return sheet !== undefined ? sheet : null;
+    }
+
+    /**
+     * Gets all the sheets in this spreadsheet.
+     * @returns  An array of all the sheets in the spreadsheet.
+     */
+    public getSheets(): Sheet[] {
+        this.loadSheetsIfNeeded();
+        return [...this.sheetMap.values()]
     }
 }
