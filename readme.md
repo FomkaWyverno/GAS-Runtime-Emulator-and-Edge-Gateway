@@ -187,6 +187,50 @@
 
 ---
 
+## Spreadsheet
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод / Об'єкт</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getId()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Повертає текстовий ідентифікатор таблиці, що відповідає оригінальному Google Spreadsheet ID.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getSheetByName(name)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Ініціалізує кеш аркушів (якщо не завантажено) та виконує миттєвий пошук об'єкта <code>Sheet</code> за назвою в оперативній пам'яті (<code>Map</code>).</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getSheetById(id)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #fff9c4; color: #b78103; font-weight: bold; text-align: center;">Обмежено</td>
+      <td style="padding: 10px; border: 1px solid #ddd;"><b>Працює локально.</b> Знаходить аркуш за id у Мапі. <i>Важливо:</i> оскільки при виклику insertSheet ID новому аркушу надається випадковий.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getSheets()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Повертає масив усіх існуючих аркушів таблиці, відсортованих у порядку їхнього відображення.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>insertSheet(...)</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">
+        Повна колекція з 8 оригінальних перевантажень GAS. Створює новий аркуш, автоматично посуваючи індекси існуючих.
+      </td>
+    </tr>
+    <tr>
+  </tbody>
+</table>
+
+---
+
 ## PropertiesService & Properties
 
 <table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
