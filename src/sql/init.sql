@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS sheets (
     sheet_index INT NOT NULL,
 
     PRIMARY KEY (sheet_id, spreadsheet_id),
-    UNIQUE KEY uk_spreadsheet_sheet_name (spreadsheet_id, name)
+    UNIQUE KEY uk_spreadsheet_sheet_name (spreadsheet_id, name),
+    UNIQUE KEY uk_spreadsheet_sheet_index (spreadsheet_id, sheet_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Таблиця для клітинок
