@@ -12,13 +12,16 @@ CREATE TABLE IF NOT EXISTS sheets (
 
 -- Таблиця для клітинок
 CREATE TABLE IF NOT EXISTS cells (
+    spreadsheet_id VARCHAR(255) NOT NULL,
     sheet_id INT NOT NULL,
     row INT NOT NULL,
     col INT NOT NULL,
     value TEXT,
     value_type VARCHAR(255),
-    PRIMARY KEY (sheet_id, row, col),
-    FOREIGN KEY (sheet_id) REFERENCES sheets(sheet_id, spreadsheet_id) ON DELETE CASCADE
+
+    PRIMARY KEY (spreadsheet_id, sheet_id, row, col),
+
+    FOREIGN KEY (spreadsheet_id, sheet_id) REFERENCES sheets(spreadsheet_id, sheet_id) ON DELETE CASCADE
 
     -- Індексація
     INDEX idx_range_lookup (sheet_id, row, col)

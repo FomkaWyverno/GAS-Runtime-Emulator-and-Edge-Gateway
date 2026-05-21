@@ -1,4 +1,6 @@
+import Database from "../core/database/Database.js";
 import { Spreadsheet } from "./Spreadsheet.js";
+import { CellEntity, CellValueType } from "./types/cell.entity.js";
 
 export class Sheet {
     constructor(
@@ -6,7 +8,7 @@ export class Sheet {
         private readonly sheet_id: number,
         private sheet_name: string,
         private sheet_index: number,
-    ) {}
+    ) { }
 
     /**
      * Returns the name of the sheet.
@@ -22,7 +24,7 @@ export class Sheet {
      */
     public _setSheetIndex(sheetIndex: number) {
         this.sheet_index = sheetIndex;
-    } 
+    }
 
     /**
      * Повертає таблицю у якій знаходиться цей аркуш
@@ -49,5 +51,87 @@ export class Sheet {
      */
     public getIndex(): number {
         return this.sheet_index;
+    }
+
+    /**
+     * Appends a row to the bottom of the current data region in the sheet.
+     * If a cell's content begins with =, it's interpreted as a formula.
+     * @param rowContents 
+     * @returns The sheet, useful for method chaining.
+     */
+    public appendRow(rowContents: Object[]): Sheet {
+        const sql = 'SELECT COALESCE(MAX(row), 0) as max_row FROM `cells` WHERE `sheet_id` = ?;';
+        const { max_row } = Database.query<{ max_row: number }>(sql, [this.getSheetId()])[0];
+
+        const nextRow = max_row + 1;
+
+        const cellsToInsert: CellEntity[] = rowContents.map((rawValue, idx) => {
+            const col = idx + 1; // Додаємо +1, щоб відповідати стандарту Google Sheet де колонка починається з 1.
+
+            if (rawValue === undefined || rawValue === null) {
+                const nullCell: CellEntity = {
+                    spreadsheet_id: this.getParent().getId(),
+                    sheet_id: this.getSheetId(),
+                    row: nextRow,
+                    col: col,
+                    value: null,
+                    value_type: "NULL"
+                }
+            }
+
+            let valueType: CellValueType = 'STRING';
+            const typeValue = typeof rawValue;
+            if (typeValue === 'number') {
+                valueType = 'NUMBER'
+            } else if (typeValue === 'boolean') {
+                valueType = 'BOOLEAN'
+            }
+
+            const value: CellEntity = {
+                spreadsheet_id: this.getParent().getId(),
+                sheet_id: this.getSheetId(),
+                row: nextRow,
+                col: col,
+                value: String(rawValue),
+                value_type: valueType
+            }
+
+            return value;
+        });
+
+        this.upsertCellsBulk(cellsToInsert);
+
+        return this;
+    }
+
+    /**
+     * Записує у бд, всі комірки одним товстим запитом
+     * @param cells Комірки які потрібно вставати/оновити в аркуші
+     * @returns 
+     */
+    private upsertCellsBulk(cells: CellEntity[]): void {
+        if (cells.length === 0) return;
+
+        const CHUNK_SIZE = 1000;
+
+        for (let i = 0; i < cells.length; i += CHUNK_SIZE) {
+            const chunk = cells.slice(i, i + CHUNK_SIZE)
+
+            const placeholders = chunk.map(() => '(?, ?, ?, ?, ?, ?)').join(', ');
+            const sql = `
+                INSERT INTO \`cells\` (spreadsheet_id, sheet_id, row, col, value, value_type)
+                VALUES ${placeholders}
+                ON DUPLICATE KEY UPDATE
+                    value = VALUES(value),
+                    value_type = VALUES(value_type);
+            `;
+
+            const flatValues = chunk.reduce((acc, cell) => {
+                acc.push(cell.spreadsheet_id, cell.sheet_id, cell.row, cell.col, cell.value, cell.value_type);
+                return acc;
+            }, [] as any[]);
+
+            Database.query(sql, flatValues);
+        }
     }
 }
