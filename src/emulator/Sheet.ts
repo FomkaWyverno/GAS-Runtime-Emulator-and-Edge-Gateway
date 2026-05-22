@@ -19,6 +19,14 @@ export class Sheet {
     }
 
     /**
+     * Returns the sheet name.
+     * @returns The name of the sheet.
+     */
+    public getSheetName(): string {
+        return this.sheet_name;
+    }
+
+    /**
      * Внутрішній метод, щоб змінювати індекс розташування у таблиці аркуша.
      * @param sheetIndex новий індекс
      */
@@ -54,16 +62,36 @@ export class Sheet {
     }
 
     /**
+     * Returns the position of the last row that has content.
+     * @returns The last row of the sheet that contains content.
+     */
+    public getLastRow(): number {
+        const sql = 'SELECT MAX(row) as max_row FROM `cells` WHERE `spreadsheet_id` = ? AND `sheet_id` = ?;';
+        const result = Database.query<{ max_row: number }>(sql, [this.getParent().getId(), this.getSheetId()]);
+    
+        return result?.[0]?.max_row ?? 0;
+    }
+
+    /**
+     * Returns the position of the last column that has content.
+     * @returns The last column of the sheet that contains content.
+     */
+    public getLastColumn(): number {
+        const sql = 'SELECT MAX(col) as max_col FROM `cells` WHERE `spreadsheet_id` = ? AND `sheet_id` = ?;';
+        const result = Database.query<{ max_col: number }>(sql, [this.getParent().getId(), this.getSheetId()]);
+    
+        return result?.[0]?.max_col ?? 0;
+    }
+
+    /**
      * Appends a row to the bottom of the current data region in the sheet.
      * If a cell's content begins with =, it's interpreted as a formula.
      * @param rowContents 
      * @returns The sheet, useful for method chaining.
      */
     public appendRow(rowContents: Object[]): Sheet {
-        const sql = 'SELECT COALESCE(MAX(row), 0) as max_row FROM `cells` WHERE `sheet_id` = ?;';
-        const { max_row } = Database.query<{ max_row: number }>(sql, [this.getSheetId()])[0];
 
-        const nextRow = max_row + 1;
+        const nextRow = this.getLastRow() + 1;
 
         const cellsToInsert: CellEntity[] = rowContents.map((rawValue, idx) => {
             const col = idx + 1; // Додаємо +1, щоб відповідати стандарту Google Sheet де колонка починається з 1.
