@@ -68,7 +68,7 @@ export class Sheet {
     public getLastRow(): number {
         const sql = 'SELECT MAX(row) as max_row FROM `cells` WHERE `spreadsheet_id` = ? AND `sheet_id` = ?;';
         const result = Database.query<{ max_row: number }>(sql, [this.getParent().getId(), this.getSheetId()]);
-    
+
         return result?.[0]?.max_row ?? 0;
     }
 
@@ -79,7 +79,7 @@ export class Sheet {
     public getLastColumn(): number {
         const sql = 'SELECT MAX(col) as max_col FROM `cells` WHERE `spreadsheet_id` = ? AND `sheet_id` = ?;';
         const result = Database.query<{ max_col: number }>(sql, [this.getParent().getId(), this.getSheetId()]);
-    
+
         return result?.[0]?.max_col ?? 0;
     }
 
@@ -130,6 +130,77 @@ export class Sheet {
         this.upsertCellsBulk(cellsToInsert);
 
         return this;
+    }
+
+
+    /**
+     * Deletes a number of columns starting at the given column position.
+     * Columns start at "1" - this deletes the first column
+     * @param columnPosition The position of the first column to delete.
+     * @param howMany The number of columns to delete.
+     * @returns The sheet, useful for method chaining.
+     */
+    public deleteColumn(columnPosition: number, howMany: number = 1): Sheet {
+        if (columnPosition < 1) throw new Error(`Columns cannot be less 1. ColumnPosition: ${columnPosition}`);
+        if (howMany < 1) return this;
+
+        return Database.transaction(() => {
+            const deleteSQL = `
+                DELETE FROM \`cells\`
+                WHERE \`spreadsheet_id\` = ? 
+                    AND \`sheet_id\` = ?
+                    AND \`col\` >= ?
+                    AND \`col\` < ?;
+            `;
+            Database.query(deleteSQL, [this.getParent().getId(), this.getSheetId(), columnPosition, columnPosition + howMany]);
+
+            const updateSQL = `
+                UPDATE \`cells\`
+                SET \`col\` = \`col\` - ?
+                WHERE \`spreadsheet_id\` = ?
+                    AND \`sheet_id\` = ?
+                    AND \`col\` >= ?;
+            `;
+            Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), columnPosition + howMany]);
+
+            return this;
+        });
+    }
+
+    /**
+     * Deletes a number of rows starting at the given row position.
+     * Rows start at "1" - this deletes the first two rows
+     * @param rowPosition The position of the first row to delete.
+     * @param howMany The number of rows to delete.
+     * @returns The sheet, useful for method chaining.
+     */
+    public deleteRows(rowPosition: number, howMany: number = 1): Sheet {
+        if (rowPosition < 1) throw new Error(`Row cannot be less 1. RowPosition: ${rowPosition}`);
+        if (howMany < 1) return this;
+
+        return Database.transaction(() => {
+            const deleteSQL = `
+                DELETE FROM \`cells\`
+                WHERE \`spreadsheet_id\` = ?
+                    AND \`sheet_id\` = ?
+                    AND \`row\` >= ?
+                    AND \`row\` < ?; 
+            `;
+
+            Database.query(deleteSQL, [this.getParent().getId(), this.getSheetId(), rowPosition, rowPosition + howMany]);
+
+            const updateSQL = `
+                UPDATE \`cells\`
+                SET \`row\` = \`row\` - ?
+                WHERE \`spreadsheet_id\` = ?
+                    AND \`sheet_id\` = ?
+                    AND \`row\` >= ?;
+            `;
+
+            Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), rowPosition + howMany]);
+
+            return this;
+        });
     }
 
     /**

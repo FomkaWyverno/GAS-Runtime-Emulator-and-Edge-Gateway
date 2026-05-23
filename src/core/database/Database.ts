@@ -15,6 +15,21 @@ class Database {
         const request: DatabaseParams = { sql, params };
         return runSyncQuerySQLFn(request);
     }
+
+    public transaction<T>(action: () => T): T {
+        try {
+            this.query('START TRANSACTION;');
+
+            const result = action();
+
+            this.query('COMMIT;');
+
+            return result;
+        } catch (error) {
+            this.query('ROLLBACK;');
+            throw error;
+        }
+    }
 }
 
 export default new Database();

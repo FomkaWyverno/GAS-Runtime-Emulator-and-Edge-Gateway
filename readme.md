@@ -282,6 +282,16 @@
       <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
       <td style="padding: 10px; border: 1px solid #ddd;">Повертає номер останньої колонки де містяться дані.</td>
     </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>deleteColumn()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Видаляє вказану колонку чи колонки, та зсуває вліво всі колонки які були праворуч від видаленої. Функція повністю трансакційна.</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>deleteRows()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Видаляє вказаний рядок чи рядки, та зсуває вверх всі рядки які були нижче від видаленего. Функція повністю трансакційна.</td>
+    </tr>
   </tbody>
 </table>
 
