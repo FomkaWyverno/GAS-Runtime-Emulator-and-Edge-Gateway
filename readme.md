@@ -292,6 +292,11 @@
       <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
       <td style="padding: 10px; border: 1px solid #ddd;">Видаляє вказаний рядок чи рядки, та зсуває вверх всі рядки які були нижче від видаленего. Функція повністю трансакційна.</td>
     </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>clearContents()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Видаляє весь вміст аркуша.</td>
+    </tr>
   </tbody>
 </table>
 

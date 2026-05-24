@@ -132,6 +132,15 @@ export class Sheet {
         return this;
     }
 
+    /**
+     * Clears the sheet of contents, while preserving formatting information.
+     * @returns This sheet, for chaining.
+     */
+    public clearContents(): Sheet {
+        const sql = 'DELETE FROM `cells` WHERE `spreadsheet_id` = ? AND `sheet_id` = ?;'
+        Database.query(sql, [this.getParent().getId(), this.getSheetId()]);
+        return this;
+    }
 
     /**
      * Deletes a number of columns starting at the given column position.
