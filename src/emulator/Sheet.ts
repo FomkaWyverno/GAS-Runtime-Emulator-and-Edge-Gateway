@@ -84,6 +84,39 @@ export class Sheet {
     }
 
     /**
+     * Inserts one or more consecutive blank columns in a sheet starting at the specified location.
+     * @param columnIndex The index indicating where to insert a column.
+     * @param numColumns The number of columns to insert.
+     * @returns
+     */
+    public insertColumns(columnIndex: number, numColumns: number = 1) : Sheet {
+        if (numColumns <= 0 || columnIndex <= 0) return this;
+
+        const sql = `
+            UPDATE \`cells\`
+            SET col = col + ?
+            WHERE \`spreadsheet_id\` = ?
+                AND \`sheet_id\` = ?
+                AND \`col\` >= ?
+            ORDER BY col DESC;
+        `;
+
+        Database.query(sql, [numColumns, this.getParent().getId(), this.getSheetId(), columnIndex])
+
+        return this;
+    }
+
+    /**
+     * Moves the columns selected by the given range to the position indicated by the destinationIndex.
+     * The columnSpec itself does not have to exactly represent an entire column or group of columns to move—it selects all columns that the range spans.
+     * @param columnSpec 
+     * @param destinationIndex 
+     */
+    public moveColumns(columnSpec: undefined, destinationIndex: number) {
+
+    }
+
+    /**
      * Appends a row to the bottom of the current data region in the sheet.
      * If a cell's content begins with =, it's interpreted as a formula.
      * @param rowContents 
