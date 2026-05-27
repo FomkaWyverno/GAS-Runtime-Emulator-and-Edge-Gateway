@@ -114,7 +114,7 @@ export class Sheet {
      * @param columnSpec 
      * @param destinationIndex 
      */
-    public moveColumns(columnSpec: undefined, destinationIndex: number) {
+    public moveColumns(columnSpec: Range, destinationIndex: number) {
 
     }
 

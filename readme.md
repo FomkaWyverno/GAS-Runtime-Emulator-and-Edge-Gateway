@@ -312,6 +312,47 @@
 
 ---
 
+## Range
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод / Об'єкт</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>getColumn()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Повертає початкову позицію стовпця для цього діапазону.</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>getRow()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Повертає початкову позицію рядка для цього діапазону.</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>getNumRows()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Повертає кількість рядків у діапазоні.</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>getNumColumns()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Повертає кількість стовпців у діапазоні.</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>getSheet()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Повертає аркуш діапазону.</td>
+      </tr>
+  </tbody>
+</table>
+
+---
+
 ## PropertiesService & Properties
 
 <table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
