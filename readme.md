@@ -302,6 +302,11 @@
       <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
       <td style="padding: 10px; border: 1px solid #ddd;">Зсуває колонки у заданому індексу, і на певну кількість колонок. У самій бази данних записи без даних не існують, тому емулятор лише зсуває колонки вправо.</td>
     </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>getRange()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Повертає область аркуша.</td>
+    </tr>
   </tbody>
 </table>
 

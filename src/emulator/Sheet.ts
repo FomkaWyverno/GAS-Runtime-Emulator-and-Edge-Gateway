@@ -1,4 +1,6 @@
 import Database from "../core/database/Database.js";
+import RangeUtils from "../core/utils/RangeUtils.js";
+import { Range } from "./Range.js";
 import { Spreadsheet } from "./Spreadsheet.js";
 import { CellEntity, CellValueType } from "./types/cell.entity.js";
 
@@ -89,7 +91,7 @@ export class Sheet {
      * @param numColumns The number of columns to insert.
      * @returns
      */
-    public insertColumns(columnIndex: number, numColumns: number = 1) : Sheet {
+    public insertColumns(columnIndex: number, numColumns: number = 1): Sheet {
         if (numColumns <= 0 || columnIndex <= 0) return this;
 
         const sql = `
@@ -243,6 +245,41 @@ export class Sheet {
 
             return this;
         });
+    }
+
+    /**
+     * Returns the range with the top left cell at the given coordinates with the given number of rows and columns.
+     * @param row 
+     * @param column 
+     */
+    public getRange(row: number, column: number): Range;
+    public getRange(row: number, column: number, numRows: number): Range;
+    public getRange(row: number, column: number, numRows: number, numColumns: number): Range;
+    public getRange(a1Notation: string): Range;
+    public getRange(...args: [string] | [number, number, number?, number?] | []): Range {
+        if (args.length === 0) throw new Error('Function expected arguments string or numbers but called with none.')
+
+        const firstArg = args[0];
+        if (typeof firstArg === 'string') {
+            const parsed = RangeUtils.parseA1Notation(firstArg);
+            return new Range(
+                this,
+                parsed.row,
+                parsed.column,
+                parsed.numRows,
+                parsed.numColumns
+            );
+        }
+
+        if (args.length < 2) throw new Error('Incorrect arguments. Expected at leatest row and column numbers.');
+
+        for (let i = 0; i < args.length; i++) {
+            if (typeof args[i] !== 'number') throw new Error(`Incorrect arguments. Expected argument #${i+1} to be a number, but got ${typeof args[i]}`);
+        }
+
+        const [row, column, numRows = 1, numColumns = 1] = args as number[];
+
+        return new Range(this, row, column, numRows, numColumns);
     }
 
     /**
