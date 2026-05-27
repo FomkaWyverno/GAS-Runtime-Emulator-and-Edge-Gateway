@@ -46,7 +46,5 @@ export class Range {
      */
     public getSheet(): Sheet {
         return this.sheet;
-    }
-
-    
+    }    
 }

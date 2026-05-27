@@ -307,6 +307,11 @@
       <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
       <td style="padding: 10px; border: 1px solid #ddd;">Повертає область аркуша.</td>
     </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>moveColumns()</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Переміщає колонки у нове заданий індекс.</td>
+    </tr>
   </tbody>
 </table>
 

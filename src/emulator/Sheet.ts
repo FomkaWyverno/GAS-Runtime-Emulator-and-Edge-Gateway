@@ -114,8 +114,54 @@ export class Sheet {
      * @param columnSpec 
      * @param destinationIndex 
      */
-    public moveColumns(columnSpec: Range, destinationIndex: number) {
+    public moveColumns(columnSpec: Range, destinationIndex: number): Sheet {
+        const startCol = columnSpec.getColumn();
+        const numCols = columnSpec.getNumColumns();
+        const endCol = startCol + numCols - 1;
 
+        if (startCol === destinationIndex || numCols <= 0 || destinationIndex <= 0) return this;
+
+        Database.transaction(() => {
+            const tempOffset = -startCol;
+            Database.query(`
+                    UPDATE \`cells\`
+                    SET \`col\` = \`col\` + ?
+                    WHERE \`spreadsheet_id\` = ? AND \`sheet_id\` = ? AND \`col\` BETWEEN ? AND ?;
+                `, [tempOffset, this.getParent().getId(), this.getSheetId(), startCol, endCol]);
+
+            if (destinationIndex < startCol) {
+                Database.query(`
+                        UPDATE \`cells\`
+                        SET \`col\` = \`col\` + ?
+                        WHERE \`spreadsheet_id\` = ? AND \`sheet_id\` = ? 
+                        AND \`col\` BETWEEN ? AND ?
+                        ORDER BY \`col\` DESC;
+                    `, [numCols, this.getParent().getId(), this.getSheetId(), destinationIndex, startCol - 1])
+            } else {
+                Database.query(`
+                        UPDATE \`cells\`
+                        SET \`col\` = \`col\` - ?
+                        WHERE \`spreadsheet_id\` = ? AND \`sheet_id\` = ?
+                        AND \`col\` BETWEEN ? AND ?
+                        ORDER BY \`col\` ASC;
+                    `, [numCols, this.getParent().getId(), this.getSheetId(), endCol + 1, destinationIndex]);
+            }
+
+            const realDestination = destinationIndex < startCol
+                ? destinationIndex
+                : destinationIndex - numCols + 1;
+
+            const finalOffset = realDestination - tempOffset;
+
+            Database.query(`
+                    UPDATE \`cells\`
+                    SET \`col\` = \`col\` + ?
+                    WHERE \`spreadsheet_id\` = ? AND \`sheet_id\` = ?
+                    AND \`col\` BETWEEN ? AND ?;
+                `,[finalOffset, this.getParent().getId(), this.getSheetId(), tempOffset + startCol, tempOffset + endCol]);
+        });
+
+        return this;
     }
 
     /**
@@ -274,7 +320,7 @@ export class Sheet {
         if (args.length < 2) throw new Error('Incorrect arguments. Expected at leatest row and column numbers.');
 
         for (let i = 0; i < args.length; i++) {
-            if (typeof args[i] !== 'number') throw new Error(`Incorrect arguments. Expected argument #${i+1} to be a number, but got ${typeof args[i]}`);
+            if (typeof args[i] !== 'number') throw new Error(`Incorrect arguments. Expected argument #${i + 1} to be a number, but got ${typeof args[i]}`);
         }
 
         const [row, column, numRows = 1, numColumns = 1] = args as number[];
