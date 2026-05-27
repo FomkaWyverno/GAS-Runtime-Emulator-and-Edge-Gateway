@@ -41,7 +41,7 @@ class RangeUtils {
         const numColumns = Math.abs(end.column - start.column) + 1;
 
         return {
-            sheetName: null,
+            sheetName: sheetName,
             row: Math.min(start.row, end.row),
             column: Math.min(start.column, end.column),
             numRows: numRows,
