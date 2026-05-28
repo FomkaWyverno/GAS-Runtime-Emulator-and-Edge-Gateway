@@ -95,11 +95,11 @@ export class Sheet {
         if (numColumns <= 0 || columnIndex <= 0) return this;
 
         const sql = `
-            UPDATE \`cells\`
+            UPDATE cells
             SET col = col + ?
-            WHERE \`spreadsheet_id\` = ?
-                AND \`sheet_id\` = ?
-                AND \`col\` >= ?
+            WHERE spreadsheet_id = ?
+                AND sheet_id = ?
+                AND col >= ?
             ORDER BY col DESC;
         `;
 
@@ -124,26 +124,26 @@ export class Sheet {
         Database.transaction(() => {
             const tempOffset = -startCol;
             Database.query(`
-                    UPDATE \`cells\`
-                    SET \`col\` = \`col\` + ?
-                    WHERE \`spreadsheet_id\` = ? AND \`sheet_id\` = ? AND \`col\` BETWEEN ? AND ?;
+                    UPDATE cells
+                    SET col = col + ?
+                    WHERE spreadsheet_id = ? AND sheet_id = ? AND col BETWEEN ? AND ?;
                 `, [tempOffset, this.getParent().getId(), this.getSheetId(), startCol, endCol]);
 
             if (destinationIndex < startCol) {
                 Database.query(`
-                        UPDATE \`cells\`
-                        SET \`col\` = \`col\` + ?
-                        WHERE \`spreadsheet_id\` = ? AND \`sheet_id\` = ? 
-                        AND \`col\` BETWEEN ? AND ?
-                        ORDER BY \`col\` DESC;
+                        UPDATE cells
+                        SET col = col + ?
+                        WHERE spreadsheet_id = ? AND sheet_id = ? 
+                        AND col BETWEEN ? AND ?
+                        ORDER BY col DESC;
                     `, [numCols, this.getParent().getId(), this.getSheetId(), destinationIndex, startCol - 1])
             } else {
                 Database.query(`
-                        UPDATE \`cells\`
-                        SET \`col\` = \`col\` - ?
-                        WHERE \`spreadsheet_id\` = ? AND \`sheet_id\` = ?
-                        AND \`col\` BETWEEN ? AND ?
-                        ORDER BY \`col\` ASC;
+                        UPDATE cells
+                        SET col = col - ?
+                        WHERE spreadsheet_id = ? AND sheet_id = ?
+                        AND col BETWEEN ? AND ?
+                        ORDER BY col ASC;
                     `, [numCols, this.getParent().getId(), this.getSheetId(), endCol + 1, destinationIndex]);
             }
 
@@ -154,10 +154,10 @@ export class Sheet {
             const finalOffset = realDestination - tempOffset;
 
             Database.query(`
-                    UPDATE \`cells\`
-                    SET \`col\` = \`col\` + ?
-                    WHERE \`spreadsheet_id\` = ? AND \`sheet_id\` = ?
-                    AND \`col\` BETWEEN ? AND ?;
+                    UPDATE cells
+                    SET col = col + ?
+                    WHERE spreadsheet_id = ? AND sheet_id = ?
+                    AND col BETWEEN ? AND ?;
                 `,[finalOffset, this.getParent().getId(), this.getSheetId(), tempOffset + startCol, tempOffset + endCol]);
         });
 
@@ -178,14 +178,16 @@ export class Sheet {
             const col = idx + 1; // Додаємо +1, щоб відповідати стандарту Google Sheet де колонка починається з 1.
 
             if (rawValue === undefined || rawValue === null) {
-                const nullCell: CellEntity = {
+                const emptyCell: CellEntity = {
                     spreadsheet_id: this.getParent().getId(),
                     sheet_id: this.getSheetId(),
                     row: nextRow,
                     col: col,
-                    value: null,
-                    value_type: "NULL"
+                    value: '',
+                    value_type: 'STRING'
                 }
+
+                return emptyCell;
             }
 
             let valueType: CellValueType = 'STRING';
@@ -194,6 +196,8 @@ export class Sheet {
                 valueType = 'NUMBER'
             } else if (typeValue === 'boolean') {
                 valueType = 'BOOLEAN'
+            } else if (rawValue instanceof Date) {
+                valueType = 'DATE'
             }
 
             const value: CellEntity = {
@@ -236,20 +240,20 @@ export class Sheet {
 
         return Database.transaction(() => {
             const deleteSQL = `
-                DELETE FROM \`cells\`
-                WHERE \`spreadsheet_id\` = ? 
-                    AND \`sheet_id\` = ?
-                    AND \`col\` >= ?
-                    AND \`col\` < ?;
+                DELETE FROM cells
+                WHERE spreadsheet_id = ? 
+                    AND sheet_id = ?
+                    AND col >= ?
+                    AND col < ?;
             `;
             Database.query(deleteSQL, [this.getParent().getId(), this.getSheetId(), columnPosition, columnPosition + howMany]);
 
             const updateSQL = `
-                UPDATE \`cells\`
-                SET \`col\` = \`col\` - ?
-                WHERE \`spreadsheet_id\` = ?
-                    AND \`sheet_id\` = ?
-                    AND \`col\` >= ?;
+                UPDATE cells
+                SET col = col - ?
+                WHERE spreadsheet_id = ?
+                    AND sheet_id = ?
+                    AND col >= ?;
             `;
             Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), columnPosition + howMany]);
 
@@ -270,21 +274,21 @@ export class Sheet {
 
         return Database.transaction(() => {
             const deleteSQL = `
-                DELETE FROM \`cells\`
-                WHERE \`spreadsheet_id\` = ?
-                    AND \`sheet_id\` = ?
-                    AND \`row\` >= ?
-                    AND \`row\` < ?; 
+                DELETE FROM cells
+                WHERE spreadsheet_id = ?
+                    AND sheet_id = ?
+                    AND row >= ?
+                    AND row < ?; 
             `;
 
             Database.query(deleteSQL, [this.getParent().getId(), this.getSheetId(), rowPosition, rowPosition + howMany]);
 
             const updateSQL = `
-                UPDATE \`cells\`
-                SET \`row\` = \`row\` - ?
-                WHERE \`spreadsheet_id\` = ?
-                    AND \`sheet_id\` = ?
-                    AND \`row\` >= ?;
+                UPDATE cells
+                SET row = row - ?
+                WHERE spreadsheet_id = ?
+                    AND sheet_id = ?
+                    AND row >= ?;
             `;
 
             Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), rowPosition + howMany]);
@@ -343,10 +347,10 @@ export class Sheet {
 
             const placeholders = chunk.map(() => '(?, ?, ?, ?, ?, ?)').join(', ');
             const sql = `
-                INSERT INTO \`cells\` (spreadsheet_id, sheet_id, row, col, value, value_type)
+                INSERT INTO cells (spreadsheet_id, sheet_id, row, col, \`value\`, value_type)
                 VALUES ${placeholders}
                 ON DUPLICATE KEY UPDATE
-                    value = VALUES(value),
+                    \`value\` = VALUES(\`value\`),
                     value_type = VALUES(value_type);
             `;
 

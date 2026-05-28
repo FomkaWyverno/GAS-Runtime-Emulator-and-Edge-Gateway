@@ -1,4 +1,6 @@
+import Database from "../core/database/Database.js";
 import { Sheet } from "./Sheet.js";
+import { CellEntity } from "./types/cell.entity.js";
 
 export class Range {
     constructor(
@@ -6,7 +8,7 @@ export class Range {
         private readonly row: number,
         private readonly column: number,
         private readonly numRows: number,
-        private readonly numColumns: number) {}
+        private readonly numColumns: number) { }
 
     /**
      * Returns the starting column position for this range
@@ -46,5 +48,56 @@ export class Range {
      */
     public getSheet(): Sheet {
         return this.sheet;
-    }    
+    }
+
+    /**
+     * Returns the value of the top-left cell in the range.
+     * The value may be of type Number, Boolean, Date, or String depending on the value of the cell.
+     * Empty cells return an empty string.
+     * @returns The value in this cell.
+     */
+    public getValue(): number | boolean | Date | string {
+        const sql = `
+            SELECT \`value\`, value_type FROM cells
+            WHERE spreadsheet_id = ? AND sheet_id = ?
+            AND col = ? AND \`row\` = ?
+            LIMIT 1;
+        `;
+
+        const result = Database
+            .query<Pick<CellEntity, 'value' | 'value_type'>>(
+                sql,
+                [
+                    this.getSheet().getParent().getId(),
+                    this.getSheet().getSheetId(),
+                    this.getColumn(),
+                    this.getRow()
+                ]);
+
+        const cell = result[0];
+        if (!cell) return '';
+
+        switch(cell.value_type) {
+            case "STRING": { 
+                return cell.value;
+            }
+
+            case "NUMBER": { 
+                const num = Number(cell.value);
+                return isNaN(num) ? '' : num;
+            }
+            
+            case "BOOLEAN": {
+                const strLower = String(cell.value).toLowerCase().trim();
+                return !(strLower === 'false' || strLower === '0' || strLower === '');
+            } 
+
+            case "DATE": {
+                const date = new Date(cell.value);
+                return isNaN(date.getTime()) ? '' : date;
+            }
+
+            default: return '';
+        }
+    }
 }
