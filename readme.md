@@ -353,6 +353,21 @@
         <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
         <td style="padding: 10px; border: 1px solid #ddd;">Повертає аркуш діапазону.</td>
       </tr>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>getValue()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Повертає значення з правого лівого кута діапазону.</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>getValues()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Повертає матрицю зі значенням діапазону.</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>setValues()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Вставляє або замінняє дані у діапазоні з матриці зі значеннями.</td>
+      </tr>
   </tbody>
 </table>
 

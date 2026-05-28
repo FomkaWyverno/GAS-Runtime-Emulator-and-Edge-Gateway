@@ -1,6 +1,6 @@
 import Database from "../core/database/Database.js";
 import { Sheet } from "./Sheet.js";
-import { CellEntity } from "./types/cell.entity.js";
+import { CellEntity, CellValueType } from "./types/cell.entity.js";
 
 export class Range {
     constructor(
@@ -77,27 +77,155 @@ export class Range {
         const cell = result[0];
         if (!cell) return '';
 
-        switch(cell.value_type) {
+        return this.parseCellValue(cell.value, cell.value_type);
+    }
+
+    
+    /**
+     * Returns the rectangular grid of values for this range.
+     * Returns a two-dimensional array of values, indexed by row, then by column.
+     * The values may be of type Number, Boolean, Date, or String, depending on the value of the cell.
+     * Empty cells are represented by an empty string in the array. Remember that while a range index starts at 1, 1, the JavaScript array is indexed from [0][0].
+     * @returns A two-dimensional array of values.
+     */
+    public getValues(): Array<Array<number | boolean | Date | string>> {
+        const endRow = this.getRow() + this.getNumRows() - 1;
+        const endColumn = this.getColumn() + this.getNumColumns() - 1;
+
+        const matrix: Array<Array<number | boolean | Date | string>> = Array.from(
+            { length: this.getNumRows() },
+            () => Array(this.numColumns).fill('')
+        );
+
+        const sql = `
+            SELECT col, \`row\`, \`value\`, value_type FROM cells
+            WHERE spreadsheet_id = ? AND sheet_id = ?
+                AND \`row\` BETWEEN ? AND ?
+                AND col BETWEEN ? AND ?;
+        `;
+
+        const cells = Database.query<Pick<CellEntity, 'col' | 'row' | 'value' | 'value_type'>>(sql, [
+            this.getSheet().getParent().getId(),
+            this.getSheet().getSheetId(),
+            this.getRow(),
+            endRow,
+            this.getColumn(),
+            endColumn
+        ]);
+
+        for (const cell of cells) {
+            const rowIndex = cell.row - this.getRow();
+            const colIndex = cell.col - this.getColumn();
+
+            matrix[rowIndex][colIndex] = this.parseCellValue(cell.value, cell.value_type);
+        }
+
+        return matrix;
+    }
+
+    /**
+     * Sets a rectangular grid of values (must match dimensions of this range). If a value begins with =, it's interpreted as a formula.
+     * @param values A two-dimensional array of values.
+     * @returns This range, for chaining.
+     */
+    public setValues(values: Array<Array<number | boolean | Date | string>>): Range {
+        if (!Array.isArray(values) || values.length !== this.getNumRows()) {
+            throw new Error(`The number of rows in the data does not match the number of rows in the range. Expected ${this.getNumRows()}`);
+        }
+
+        const bindValues: any[] = [];
+        const valuePlaceholders: string[] = [];
+
+        const spreadsheetId = this.getSheet().getParent().getId();
+        const sheetId = this.getSheet().getSheetId();
+
+        for (let r = 0; r < this.getNumRows(); r++) {
+            const rowData = values[r];
+
+            if (!Array.isArray(rowData) || rowData.length !== this.numColumns) {
+                throw new Error(`The number of columns in row ${r} does not match num columns in range. Expected ${this.getNumColumns()}, but got ${rowData?.length}`);
+            }
+
+            const actualRow = this.getRow() + r;
+
+            for (let c = 0; c < this.getNumColumns(); c++) {
+                const actualCol = this.getColumn() + c;
+                const rawValue = rowData[c];
+
+                const { value, valueType } = this.determinateValueAndType(rawValue);
+
+                valuePlaceholders.push('(?, ?, ?, ?, ?, ?)');
+
+                bindValues.push(
+                    spreadsheetId,
+                    sheetId,
+                    actualRow,
+                    actualCol,
+                    value,
+                    valueType
+                );
+            }
+        }
+
+        if (valuePlaceholders.length === 0) return this;
+
+        const sql = `
+            INSERT INTO cells (spreadsheet_id, sheet_id, \`row\`, \`value\`, value_type)
+            VALUES ${valuePlaceholders.join(', ')}
+            ON DUPLICATE KEY UPDATE
+                \`value\` = VALUES(\`value\`),
+                value_type = VALUES(value_type);
+        `;
+
+        Database.query(sql, bindValues);
+
+        return this;
+    }
+
+    private parseCellValue(rawValue: string | null | undefined, valueType: CellValueType): number | boolean | Date | string {
+        if (rawValue === null || rawValue === undefined || rawValue === '') return '';
+
+        switch(valueType) {
             case "STRING": { 
-                return cell.value;
+                return rawValue;
             }
 
             case "NUMBER": { 
-                const num = Number(cell.value);
+                const num = Number(rawValue);
                 return isNaN(num) ? '' : num;
             }
-            
+
             case "BOOLEAN": {
-                const strLower = String(cell.value).toLowerCase().trim();
+                const strLower = String(rawValue).toLowerCase().trim();
                 return !(strLower === 'false' || strLower === '0' || strLower === '');
             } 
 
             case "DATE": {
-                const date = new Date(cell.value);
+                const date = new Date(rawValue);
                 return isNaN(date.getTime()) ? '' : date;
             }
 
             default: return '';
         }
+    }
+
+    private determinateValueAndType(val: number | boolean | Date | string): { value: string, valueType: CellValueType } {
+        if (val === null || val === undefined || val === '') {
+            return { value: '', valueType: 'STRING' }
+        }
+
+        if (typeof val === 'boolean') {
+            return { value: val ? 'TRUE' : 'FALSE', valueType: 'BOOLEAN' }
+        }
+
+        if (typeof val === 'number') {
+            return { value: String(val), valueType: 'NUMBER' }
+        }
+
+        if (val instanceof Date) {
+            return { value: val.toISOString(), valueType: 'DATE' }
+        }
+
+        return { value: String(val), valueType: 'STRING' }
     }
 }
