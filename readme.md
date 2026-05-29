@@ -394,6 +394,58 @@
 
 ---
 
+## LockService
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод / Об'єкт</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>getScriptLock()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Повертає блок об'єкт (Lock).</td>
+      </tr>
+  </tbody>
+</table>
+
+---
+
+## Lock
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод / Об'єкт</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>waitLock()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Очікує поки зможе взяти блокування, якщо таймаут пройде, викине помилку.</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>releaseLock()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Відпускає блокування, лише у випадку якщо цей потік брав блокування.</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>hasLock()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Перевіряє чи цей потік має блокування.</td>
+      </tr>
+  </tbody>
+</table>
+
+---
+
 ## PropertiesService & Properties
 
 <table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
