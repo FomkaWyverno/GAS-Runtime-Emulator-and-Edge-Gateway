@@ -373,6 +373,27 @@
 
 ---
 
+# SpreadsheetsCollection
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод / Об'єкт</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd;"><code>batchUpdate()</code></td>
+        <td style="padding: 10px; border: 1px solid #ddd; background-color: #fff9c4; color: #b78103; font-weight: bold; text-align: center;">Обмежено</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">Робить оновлення одним великим запитом. Доступно лише deleteSheet.</td>
+      </tr>
+  </tbody>
+</table>
+
+---
+
 ## PropertiesService & Properties
 
 <table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
