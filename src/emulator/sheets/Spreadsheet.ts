@@ -1,4 +1,4 @@
-import Database from "../core/database/Database.js";
+import Database from "../../core/database/Database.js";
 import { Sheet } from "./Sheet.js";
 import crypto from 'crypto'
 

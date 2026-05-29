@@ -1,8 +1,8 @@
-import Database from "../core/database/Database.js";
-import RangeUtils from "../core/utils/RangeUtils.js";
+import Database from "../../core/database/Database.js";
+import RangeUtils from "../../core/utils/RangeUtils.js";
 import { Range } from "./Range.js";
 import { Spreadsheet } from "./Spreadsheet.js";
-import { CellEntity, CellValueType } from "./types/cell.entity.js";
+import { CellEntity, CellValueType } from "../@types/sheets/cell.entity.js";
 
 export class Sheet {
     constructor(

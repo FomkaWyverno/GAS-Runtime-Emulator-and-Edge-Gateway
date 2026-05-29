@@ -1,4 +1,4 @@
-import { Utilities } from "../src/emulator/Utilities.js";
+import { Utilities } from "../src/emulator/utils/Utilities.js";
 
 describe('Utilities.computeDigest', () => {
     const stringTest = "Hello World";

@@ -1,6 +1,6 @@
 import syncFetch from 'sync-fetch'
-import { URLFetchRequestOptions } from "./types/URLFetchRequestOptions.js";
-import { Blob } from "./Blob.js";
+import { URLFetchRequestOptions } from "../@types/URLFetchRequestOptions.js";
+import { Blob } from "../utils/Blob.js";
 import { HTTPResponse } from './HTTPResponse.js';
 
 export class UrlFetchApp {

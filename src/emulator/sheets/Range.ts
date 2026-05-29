@@ -1,6 +1,6 @@
-import Database from "../core/database/Database.js";
+import Database from "../../core/database/Database.js";
 import { Sheet } from "./Sheet.js";
-import { CellEntity, CellValueType } from "./types/cell.entity.js";
+import { CellEntity, CellValueType } from "../@types/sheets/cell.entity.js";
 
 export class Range {
     constructor(

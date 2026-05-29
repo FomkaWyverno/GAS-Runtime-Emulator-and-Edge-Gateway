@@ -1,4 +1,4 @@
-import { Blob } from "./Blob.js";
+import { Blob } from "../utils/Blob.js";
 
 export class HTTPResponse {
     private readonly allHeaders: Record<string, string | string[]>;
