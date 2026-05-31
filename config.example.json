@@ -1,4 +1,5 @@
 {
+    "apps_script_path_src": "apps\\script\\path\\src",
     "database": {
         "url": "mysql://username:password@host:port/database_name"
     },

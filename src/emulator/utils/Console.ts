@@ -1,4 +1,4 @@
-class ConsoleEmulator {
+class Console {
     /**
      * Дублюємо логіку Console.log із Google Apps Script
      * @param message повідомлення або об'єкт
@@ -9,4 +9,4 @@ class ConsoleEmulator {
     }
 }
 
-export { ConsoleEmulator as Console }
+export default new Console();

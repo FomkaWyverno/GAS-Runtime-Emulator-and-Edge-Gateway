@@ -3,14 +3,15 @@ import { BatchUpdateRequest } from "../../@types/sheets/advanced/batchUpdate/Bat
 
 export class SpreadsheetsCollection {
     public batchUpdate(resource: BatchUpdateRequest, spreadsheetId: string): void {
-        Database.transaction(() => {
+        Database.transaction(transactionId => {
             for (const request of resource.requests) {
                 if (request.deleteSheet) {
                     const { sheetId } = request.deleteSheet;
                     
                     Database.query(
                         'DELETE FROM sheets WHERE sheet_id = ? AND spreadsheet_id = ?;',
-                        [sheetId, spreadsheetId]
+                        [sheetId, spreadsheetId],
+                        transactionId
                     );
                 }
             }

@@ -1,5 +1,5 @@
 import Database from "../../core/database/Database.js";
-import RangeUtils from "../../core/utils/RangeUtils.js";
+import RangeUtils from "../../emulator-utils/RangeUtils.js";
 import { Range } from "./Range.js";
 import { Spreadsheet } from "./Spreadsheet.js";
 import { CellEntity, CellValueType } from "../@types/sheets/cell.entity.js";
@@ -121,13 +121,13 @@ export class Sheet {
 
         if (startCol === destinationIndex || numCols <= 0 || destinationIndex <= 0) return this;
 
-        Database.transaction(() => {
+        Database.transaction(transactionId => {
             const tempOffset = -startCol;
             Database.query(`
                     UPDATE cells
                     SET col = col + ?
                     WHERE spreadsheet_id = ? AND sheet_id = ? AND col BETWEEN ? AND ?;
-                `, [tempOffset, this.getParent().getId(), this.getSheetId(), startCol, endCol]);
+                `, [tempOffset, this.getParent().getId(), this.getSheetId(), startCol, endCol], transactionId);
 
             if (destinationIndex < startCol) {
                 Database.query(`
@@ -136,7 +136,7 @@ export class Sheet {
                         WHERE spreadsheet_id = ? AND sheet_id = ? 
                         AND col BETWEEN ? AND ?
                         ORDER BY col DESC;
-                    `, [numCols, this.getParent().getId(), this.getSheetId(), destinationIndex, startCol - 1])
+                    `, [numCols, this.getParent().getId(), this.getSheetId(), destinationIndex, startCol - 1], transactionId);
             } else {
                 Database.query(`
                         UPDATE cells
@@ -144,7 +144,7 @@ export class Sheet {
                         WHERE spreadsheet_id = ? AND sheet_id = ?
                         AND col BETWEEN ? AND ?
                         ORDER BY col ASC;
-                    `, [numCols, this.getParent().getId(), this.getSheetId(), endCol + 1, destinationIndex]);
+                    `, [numCols, this.getParent().getId(), this.getSheetId(), endCol + 1, destinationIndex], transactionId);
             }
 
             const realDestination = destinationIndex < startCol
@@ -158,7 +158,7 @@ export class Sheet {
                     SET col = col + ?
                     WHERE spreadsheet_id = ? AND sheet_id = ?
                     AND col BETWEEN ? AND ?;
-                `,[finalOffset, this.getParent().getId(), this.getSheetId(), tempOffset + startCol, tempOffset + endCol]);
+                `,[finalOffset, this.getParent().getId(), this.getSheetId(), tempOffset + startCol, tempOffset + endCol], transactionId);
         });
 
         return this;
@@ -238,7 +238,7 @@ export class Sheet {
         if (columnPosition < 1) throw new Error(`Columns cannot be less 1. ColumnPosition: ${columnPosition}`);
         if (howMany < 1) return this;
 
-        return Database.transaction(() => {
+        return Database.transaction(transactionId => {
             const deleteSQL = `
                 DELETE FROM cells
                 WHERE spreadsheet_id = ? 
@@ -246,7 +246,7 @@ export class Sheet {
                     AND col >= ?
                     AND col < ?;
             `;
-            Database.query(deleteSQL, [this.getParent().getId(), this.getSheetId(), columnPosition, columnPosition + howMany]);
+            Database.query(deleteSQL, [this.getParent().getId(), this.getSheetId(), columnPosition, columnPosition + howMany], transactionId);
 
             const updateSQL = `
                 UPDATE cells
@@ -255,7 +255,7 @@ export class Sheet {
                     AND sheet_id = ?
                     AND col >= ?;
             `;
-            Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), columnPosition + howMany]);
+            Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), columnPosition + howMany], transactionId);
 
             return this;
         });
@@ -272,7 +272,7 @@ export class Sheet {
         if (rowPosition < 1) throw new Error(`Row cannot be less 1. RowPosition: ${rowPosition}`);
         if (howMany < 1) return this;
 
-        return Database.transaction(() => {
+        return Database.transaction(transactionId => {
             const deleteSQL = `
                 DELETE FROM cells
                 WHERE spreadsheet_id = ?
@@ -281,7 +281,7 @@ export class Sheet {
                     AND row < ?; 
             `;
 
-            Database.query(deleteSQL, [this.getParent().getId(), this.getSheetId(), rowPosition, rowPosition + howMany]);
+            Database.query(deleteSQL, [this.getParent().getId(), this.getSheetId(), rowPosition, rowPosition + howMany], transactionId);
 
             const updateSQL = `
                 UPDATE cells
@@ -291,7 +291,7 @@ export class Sheet {
                     AND row >= ?;
             `;
 
-            Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), rowPosition + howMany]);
+            Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), rowPosition + howMany], transactionId);
 
             return this;
         });

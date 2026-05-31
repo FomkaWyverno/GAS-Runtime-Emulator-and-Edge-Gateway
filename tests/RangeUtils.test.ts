@@ -1,4 +1,4 @@
-import RangeUtils, { ParsedRange } from "../src/core/utils/RangeUtils.js";
+import RangeUtils, { ParsedRange } from "../src/emulator-utils/RangeUtils.js";
 
 
 describe('RangeUtils.parseA1Notation', () => {

@@ -1,32 +1,54 @@
 import path from "path";
 import { createSyncFn } from "synckit";
 import { fileURLToPath } from "url";
-import { DatabaseParams } from "./DatabaseWorker.js";
+import { DatabaseParams, DatabaseWorkerResult } from "./DatabaseWorker.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const workerPath = path.resolve(__dirname,'DatabaseWorker.js');
+const workerPath = path.resolve(__dirname, 'DatabaseWorker.js');
 
-const runSyncQuerySQLFn = createSyncFn(workerPath);
+const runSyncDBFn = createSyncFn<(params: DatabaseParams) => DatabaseWorkerResult>(workerPath);
 
 class Database {
-    public query<T = any>(sql: string, params?: any[]): T[] {
-        const request: DatabaseParams = { sql, params };
-        return runSyncQuerySQLFn(request);
+    public query<T = any>(sql: string, params?: any[], transactionId?: string): T[] {
+        const request: DatabaseParams = {
+            actionType: 'QUERY',
+            sql,
+            params,
+            transactionId
+        };
+        const result = runSyncDBFn(request);
+
+        if (result.type === 'ERROR') throw new Error(`Database Query Error: ${result.error}`);
+
+        if (result.type === 'QUERY') {
+            return result.data?.rows as T[];
+        }
+
+        throw new Error(`Unknown result type in query! Result type: ${result.type}`);
     }
 
-    public transaction<T>(action: () => T): T {
+    public transaction<T>(action: (transactionId: string) => T): T {
+        let transactionId: string | undefined = undefined;
         try {
-            this.query('START TRANSACTION;');
+            const transaction = runSyncDBFn({
+                'actionType': 'START_TRANSACTION',
+            });
 
-            const result = action();
+            if (transaction.type !== 'TRANSACTION') throw new Error(`Unknown type for Start Transaction result! Type: ${transaction.type}`);
+            if (!transaction.data) throw new Error(`Created Transaction do not has data. Start transaction result: ${JSON.stringify(transaction, null, 2)}`);
 
-            this.query('COMMIT;');
+            transactionId = transaction.data.transactionId;
+            const result = action(transactionId);
+
+            runSyncDBFn({ actionType: 'COMMIT', transactionId: transactionId })
 
             return result;
         } catch (error) {
-            this.query('ROLLBACK;');
+            if (transactionId) {
+                runSyncDBFn({ actionType: 'ROLLBACK', transactionId: transactionId });
+            }
             throw error;
         }
     }
