@@ -2,4 +2,7 @@ node_modules/*
 node_modules
 package-lock.json
 gas-analysis-report.json
-config.json
+
+# Конфігурація та АПІ ключи
+.env/config.json
+.env/credentials.json

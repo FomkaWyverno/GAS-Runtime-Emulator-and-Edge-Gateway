@@ -49,11 +49,12 @@ const activeTransactions = new Map<string, PoolConnection>()
 
 async function init(): Promise<void> {
     if (pool) return;
-
+    
+    console.log('Initialization DatabaseWorker')
     if (config.database && config.database.url) {
         pool = mysql.createPool(config.database.url);
-        await initSchema();
         console.log('MySQL Connection Pool initilized')
+        await initSchema();
     }
 }
 

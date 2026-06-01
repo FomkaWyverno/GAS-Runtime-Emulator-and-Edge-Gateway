@@ -2,7 +2,7 @@
 
 class AppBootstrap {
     public static boot() {
-
+        
     }
 }
 
