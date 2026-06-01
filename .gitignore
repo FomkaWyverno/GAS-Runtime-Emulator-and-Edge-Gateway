@@ -4,5 +4,6 @@ package-lock.json
 gas-analysis-report.json
 
 # Конфігурація та АПІ ключи
-.env/config.json
-.env/credentials.json
+dotenv/config.json
+dotenv/credentials.json
+.env
