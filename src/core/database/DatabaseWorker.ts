@@ -1,4 +1,4 @@
-import configData from '../../../config.json' with { type: 'json' }
+import configData from '../../../dotenv/config.json' with { type: 'json' }
 import mysql, { Connection, Pool, PoolConnection, ResultSetHeader } from "mysql2/promise";
 import path from "path";
 import fs from 'fs'
@@ -55,9 +55,14 @@ async function init(): Promise<void> {
         pool = mysql.createPool(config.database.url);
         console.log('MySQL Connection Pool initilized')
         await initSchema();
+        console.log('Start truncate database');
+        await truncateTables();
     }
 }
 
+/**
+ * Ініцілізує схему таблиць
+ */
 async function initSchema(): Promise<void> {
     try {
         if (!pool) throw new Error('Initialize Schema can\'t without MySQL Connection!');
@@ -77,6 +82,32 @@ async function initSchema(): Promise<void> {
         console.log(`MySQL Initilized DB-Schema`);
     } catch (error: any) {
         console.error('Fatal error in runtime intilized MySQL schema', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Очищає всі таблиці
+ */
+async function truncateTables() {
+    try {
+        if (!pool) throw new Error("Truncate table can't without MySQL Connection!");
+
+        const sqlFilePath = path.join(__dirname, 'sql', 'truncate.sql');
+        const sql = fs.readFileSync(sqlFilePath, 'utf-8');
+
+        const sqlQueries = sql
+            .split(';')
+            .map(query => query.trim())
+            .filter(query => query.length > 0);
+
+        for (const query of sqlQueries) {
+            await pool.query(query)
+        }
+        
+        console.log(`MySql truncate tables!`)
+    } catch (error: any) {
+        console.error('Fatal error in runtime truncate tables', error.message);
         throw error;
     }
 }

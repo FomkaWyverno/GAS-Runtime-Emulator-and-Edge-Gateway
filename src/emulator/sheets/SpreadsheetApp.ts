@@ -1,6 +1,6 @@
 import Database from "../../core/database/Database.js";
 import { Spreadsheet } from "./Spreadsheet.js";
-import configData from '../../../config.json' with { type: 'json' }
+import configData from '../../../dotenv/config.json' with { type: 'json' }
 import { AppConfig } from "../../@types/AppConfig.js";
 
 const config = configData as unknown as AppConfig;
