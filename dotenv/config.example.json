@@ -5,9 +5,12 @@
     },
     "gas": {
         "activeSpreadsheetId": "activeSpreadsheetId",
-        "sheetsToSync": ["Array", "with", "google", "sheets", "for", "synchronization", "to", "local", "database"],
         "defaultScriptProperty": {
             "key": "value"   
         }
+    },
+    "sync": {
+        "spreadsheetdId": "spreadsheetdId",
+        "sheets": ["Array", "with", "google", "sheets", "for", "synchronization", "to", "local", "database"],
     }
 }

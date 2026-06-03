@@ -18,7 +18,7 @@ class GoogleSheetsService {
         })
     }
 
-    async getValues(spreadsheetId: string, range: string): Promise<any[][] | null | undefined> {
+    async getValues(spreadsheetId: string, range: string): Promise<sheets_v4.Schema$ValueRange> {
         try {
             const response = await this.sheets.spreadsheets.values.get({
                 spreadsheetId,
@@ -26,7 +26,7 @@ class GoogleSheetsService {
                 valueRenderOption: 'UNFORMATTED_VALUE'
             });
 
-            return response.data.values;
+            return response.data;
         } catch (error) {
             console.error(`Cannot read range from Google Sheet. SpreadsheetId: ${spreadsheetId} Range: ${range}`, error);
             throw error;
@@ -50,15 +50,20 @@ class GoogleSheetsService {
         }
     }
 
-    async getSheetsList(spreadsheetId: string): Promise<sheets_v4.Schema$Sheet[]> {
+    /**
+     * Повертає загальну інформацію про таблицю
+     * @param spreadsheetId ідентифікатор таблиці
+     * @returns Схему таблиці
+     */
+    async getSpreadsheet(spreadsheetId: string): Promise<sheets_v4.Schema$Spreadsheet> {
         try {
             const response = await this.sheets.spreadsheets.get({
                 spreadsheetId
             });
 
-            return response.data.sheets || [];
+            return response.data;
         } catch (error) {
-            console.error(`Cannot get Sheets list. SpreadsheetId: ${spreadsheetId}`);
+            console.error(`Cannot get Spreadsheet. SpreadsheetId: ${spreadsheetId}`);
             throw error;
         }
     }

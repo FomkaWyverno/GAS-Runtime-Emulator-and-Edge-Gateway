@@ -1,10 +1,9 @@
-import configData from '../../../dotenv/config.json' with { type: 'json' }
-import mysql, { Connection, Pool, PoolConnection, ResultSetHeader } from "mysql2/promise";
+import mysql, { Pool, PoolConnection, ResultSetHeader } from "mysql2/promise";
 import path from "path";
 import fs from 'fs'
 import { runAsWorker } from "synckit";
-import { AppConfig } from '../../@types/AppConfig.js';
 import { fileURLToPath } from 'url';
+import AppConfig from "../config/AppConfig.js";
 
 export interface DatabaseParams {
     actionType?: 'QUERY' | 'START_TRANSACTION' | 'COMMIT' | 'ROLLBACK';
@@ -40,7 +39,6 @@ export type DatabaseWorkerResult = {
     }
 }[DatabaseWorkerResultType]
 
-const config = configData as unknown as AppConfig;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -51,8 +49,8 @@ async function init(): Promise<void> {
     if (pool) return;
     
     console.log('Initialization DatabaseWorker')
-    if (config.database && config.database.url) {
-        pool = mysql.createPool(config.database.url);
+    if (AppConfig.database && AppConfig.database.url) {
+        pool = mysql.createPool(AppConfig.database.url);
         console.log('MySQL Connection Pool initilized')
         await initSchema();
         console.log('Start truncate database');

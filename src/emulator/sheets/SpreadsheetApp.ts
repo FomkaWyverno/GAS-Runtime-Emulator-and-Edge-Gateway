@@ -1,9 +1,7 @@
+import AppConfig from "../../core/config/AppConfig.js";
 import Database from "../../core/database/Database.js";
 import { Spreadsheet } from "./Spreadsheet.js";
-import configData from '../../../dotenv/config.json' with { type: 'json' }
-import { AppConfig } from "../../@types/AppConfig.js";
 
-const config = configData as unknown as AppConfig;
 
 export class SpreadsheetApp {
     private static spreadsheetMap = new Map<string, Spreadsheet>();
@@ -38,7 +36,7 @@ export class SpreadsheetApp {
      * @returns The active Spreadsheet object.
      */
     public static getActive(): Spreadsheet {
-        const activeId = config.gas?.activeSpreadsheetId;
+        const activeId = AppConfig.gas.activeSpreadsheetId;
 
         if (!activeId) throw new Error('Missing configuration ActiveSpreadsheetId');
 

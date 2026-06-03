@@ -1,7 +1,8 @@
+import { BootStrap } from "./Bootstrap.js";
 
 
-class AppBootstrap {
-    public static boot() {
+class AppBootstrap implements BootStrap {
+    public async boot() {
         
     }
 }
