@@ -19,7 +19,7 @@ const AppConfig = {
         defaultScriptProperty: jsonConfig.gas.defaultScriptProperty as Record<string,string>
     },
     sync: {
-        spreadsheetdId: jsonConfig.sync.spreadsheetdId as string,
+        spreadsheetId: jsonConfig.sync.spreadsheetId as string,
         sheets: jsonConfig.sync.sheets as string[]
     }
 }

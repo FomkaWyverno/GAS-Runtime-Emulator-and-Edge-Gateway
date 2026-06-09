@@ -10,7 +10,7 @@
         }
     },
     "sync": {
-        "spreadsheetdId": "spreadsheetdId",
-        "sheets": ["Array", "with", "google", "sheets", "for", "synchronization", "to", "local", "database"],
+        "spreadsheetId": "spreadsheetId",
+        "sheets": ["Array", "with", "google", "sheets", "for", "synchronization", "to", "local", "database"]
     }
 }
