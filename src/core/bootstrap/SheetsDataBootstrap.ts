@@ -40,9 +40,6 @@ class SheetsDataBootstrap implements BootStrap {
 
         this.createSheetToDatabase(dataSheets);
         this.bulkInsertSheetsValuesToDatabase(valueSheets);
-        // TODO: Доробити витягування данних з таблиці до баз данних.
-        // TODO: Зробити великий один запит, щоб вставити всі дані з таблиці у БД
-
     }
 
     /**
