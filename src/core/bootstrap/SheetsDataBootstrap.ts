@@ -4,12 +4,21 @@ import GoogleSheetsService from "../service/GoogleSheetsService.js";
 import { BootStrap } from "./Bootstrap.js";
 import { asyncPool } from "../helpers/asyncPool.js";
 import Database from "../database/Database.js";
+import { CellValueType } from "../../emulator/@types/sheets/cell.entity.js";
 
 interface SheetValues {
+    spreadsheetId: string;
+    sheetId: number;
     title: string;
     valueRange: sheets_v4.Schema$ValueRange
 }
 
+interface CellValue {
+    value: any;
+    row: number;
+    col: number;
+    value_type: CellValueType
+}
 
 class SheetsDataBootstrap implements BootStrap {
     public async boot() {
@@ -58,10 +67,10 @@ class SheetsDataBootstrap implements BootStrap {
     private async pullSheetsValues(sheets: sheets_v4.Schema$Sheet[], asyncPoolSize: number = 5): Promise<SheetValues[]> {
         return await asyncPool(sheets, asyncPoolSize, async sheet => {
             const title = sheet.properties?.title!;
-            
+
             const valueRange = await GoogleSheetsService.getValues(AppConfig.sync.spreadsheetId, title);
 
-            return { title, valueRange }
+            return { spreadsheetId: AppConfig.sync.spreadsheetId, sheetId: sheet.properties?.sheetId!, title, valueRange }
         });
     }
 
@@ -88,7 +97,51 @@ class SheetsDataBootstrap implements BootStrap {
     private bulkInsertSheetsValuesToDatabase(sheetsValues: SheetValues[], chunk_size: number = 1000) {
         if (sheetsValues.length === 0) return;
 
-        // TODO: Доробити масову вставку по чанкам даних з таблиці у бд
+        sheetsValues.forEach(sheetValues => {
+            const values: CellValue[] = sheetValues.valueRange.values?.flatMap((row, rowIndex) =>
+                row.reduce((acc, cell, colIndex) => {
+                    // Якщо комірка порожня (null, undefined або ""), взагалі не пушимо її в базу
+                    if (cell !== null && cell !== undefined && cell !== "") {
+                        acc.push({
+                            value: cell,
+                            row: rowIndex + 1,
+                            col: colIndex + 1,
+                            value_type: this.getCellType(cell)
+                        });
+                    }
+                    return acc;
+                }, [] as CellValue[])
+            ) ?? [];
+
+            for (let i = 0; i < values.length; i += chunk_size) {
+                const chunk = values.slice(i, i + chunk_size);
+
+                const placeholders = chunk.map(() => `(?, ?, ?, ?, ?, ?)`).join(', ');
+                const sql = `
+                INSERT INTO \`cells\` (spreadsheet_id, sheet_id, \`row\`, col, \`value\`, value_type)
+                VALUES ${placeholders};
+            `;
+
+                const flatValues = chunk.reduce((acc, cell) => {
+                    acc.push(sheetValues.spreadsheetId, sheetValues.sheetId, cell.row, cell.col, cell.value, cell.value_type)
+                    return acc; // TODO Доробити вставку індекси
+                }, [] as any[]);
+
+                Database.query(sql, flatValues)
+            }
+        });
+
+
+    }
+
+    private getCellType(value: any): CellValueType {
+        if (typeof value === 'boolean') return 'BOOLEAN';
+        if (typeof value === 'number') return 'NUMBER';
+
+        const isDate = !isNaN(Date.parse(value)) && isNaN(Number(value));
+        if (isDate) return 'DATE';
+
+        return 'STRING';
     }
 }
 

@@ -18,12 +18,19 @@ class GoogleSheetsService {
         })
     }
 
+    /**
+     * Отримує сирі значення з таблиці. Дату отримує у вигляді форматованого рядка.
+     * @param spreadsheetId ідентифікатор електроної таблиці
+     * @param range діапазон значень
+     * @returns діапозон зі значеннями
+     */
     async getValues(spreadsheetId: string, range: string): Promise<sheets_v4.Schema$ValueRange> {
         try {
             const response = await this.sheets.spreadsheets.values.get({
                 spreadsheetId,
                 range,
-                valueRenderOption: 'UNFORMATTED_VALUE'
+                valueRenderOption: 'UNFORMATTED_VALUE',
+                dateTimeRenderOption: 'FORMATTED_STRING'
             });
 
             return response.data;
