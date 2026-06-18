@@ -29,16 +29,21 @@ class SheetsDataBootstrap implements BootStrap {
         if (!spreadsheetId || typeof spreadsheetId !== 'string') throw new Error('Confy sync.spreadsheetId miss or is not string');
 
         const sheetNameSet = new Set(AppConfig.sync.sheets);
+
+        console.log(`[SheetsDataBootstrap] - Collect sheets with data from Google Sheet according to the configuration`)
         // Аркуші з даними які потрібно для запуску емулятора
         const dataSheets = await this.getDataSheets(sheetNameSet);
 
         // Якщо таблиця має не таку кількість аркушів як у конфігу, тоді сповіщаємо про помилку
         if (dataSheets.length !== sheetNameSet.size) throw new Error('Data sheets do not equal to size configuration sheets sync');
 
+        console.log(`[SheetsDataBootstrap] - Pull out data from sheets`)
         const valueSheets: SheetValues[] = await this.pullSheetsValues(dataSheets);
         if (valueSheets.length === 0) return;
 
+        console.log(`[SheetsDataBootstrap] - Create sheets in database`)
         this.createSheetToDatabase(dataSheets);
+        console.log(`[SheetsDataBootstrap] - Insertions data from sheets to Database`);
         this.bulkInsertSheetsValuesToDatabase(valueSheets);
     }
 
@@ -121,7 +126,7 @@ class SheetsDataBootstrap implements BootStrap {
 
                 const flatValues = chunk.reduce((acc, cell) => {
                     acc.push(sheetValues.spreadsheetId, sheetValues.sheetId, cell.row, cell.col, cell.value, cell.value_type)
-                    return acc; // TODO Доробити вставку індекси
+                    return acc;
                 }, [] as any[]);
 
                 Database.query(sql, flatValues)
