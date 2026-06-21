@@ -1,14 +1,16 @@
 import path from "path";
 import { createSyncFn } from "synckit";
 import { fileURLToPath } from "url";
-import { DatabaseParams, DatabaseWorkerResult } from "./DatabaseWorker.js";
+import type { DatabaseParams, DatabaseWorkerResult } from "./DatabaseWorker.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const workerPath = path.resolve(__dirname, 'DatabaseWorker.js');
 
-const runSyncDBFn = createSyncFn<(params: DatabaseParams) => DatabaseWorkerResult>(workerPath);
+const runSyncDBFn = createSyncFn<(params: DatabaseParams) => DatabaseWorkerResult>(workerPath, {
+    tsRunner: 'tsx'
+});
 
 class Database {
     public query<T = any>(sql: string, params?: any[], transactionId?: string): T[] {

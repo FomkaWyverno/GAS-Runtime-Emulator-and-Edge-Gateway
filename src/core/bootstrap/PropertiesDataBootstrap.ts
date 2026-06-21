@@ -8,6 +8,9 @@ class PropertiesDataBootstrap implements BootStrap {
         const properties = AppConfig.gas.defaultScriptProperty;
 
         const keys = Object.keys(properties);
+
+        if (keys.length === 0) return;
+
         const placeholder = keys.map(() => `(?, ?)`).join(', ');
 
         const sql = `

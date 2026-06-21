@@ -6,8 +6,9 @@
   "author": "WyvernoTeam",
   "type": "module",
   "scripts": {
-    "build": "tsx && cpx \"src/sql/**/*.sql\" dist/sql",
-    "dev": "tsx --env-file=.env src/index.ts",
+    "build": "tsc && npx cpx \"src/sql/**/*.sql\" dist/sql",
+    "dev": "tsx --env-file=.env src/main.ts",
+    "start": "node --env-file=.env dist/main.js",
     "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js",
     "test:watch": "npm test -- --watch"
   },

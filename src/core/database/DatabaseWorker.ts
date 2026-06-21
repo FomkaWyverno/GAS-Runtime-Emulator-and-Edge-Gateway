@@ -1,9 +1,9 @@
-import mysql, { Pool, PoolConnection, ResultSetHeader } from "mysql2/promise";
-import path from "path";
+import mysql from "mysql2/promise";
+import type { Pool, PoolConnection, ResultSetHeader} from "mysql2/promise";
+import path, { dirname, resolve } from "path";
 import fs from 'fs'
 import { runAsWorker } from "synckit";
-import { fileURLToPath } from 'url';
-import AppConfig from "../config/AppConfig.js";
+import AppConfig from "../config/AppConfig.ts";
 
 export interface DatabaseParams {
     actionType?: 'QUERY' | 'START_TRANSACTION' | 'COMMIT' | 'ROLLBACK';
@@ -39,8 +39,8 @@ export type DatabaseWorkerResult = {
     }
 }[DatabaseWorkerResultType]
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const mainFilePath = resolve(process.argv[1]);
+const __dirname = dirname(mainFilePath);
 
 let pool: Pool | null = null;
 const activeTransactions = new Map<string, PoolConnection>()
@@ -65,7 +65,7 @@ async function initSchema(): Promise<void> {
     try {
         if (!pool) throw new Error('Initialize Schema can\'t without MySQL Connection!');
 
-        const sqlFilePath = path.join(__dirname, 'sql', 'init.sql');
+        const sqlFilePath = path.join(__dirname, '..', '..', 'sql', 'init.sql');
         const sql = fs.readFileSync(sqlFilePath, 'utf-8');
 
         const sqlQueries = sql
@@ -91,7 +91,7 @@ async function truncateTables() {
     try {
         if (!pool) throw new Error("Truncate table can't without MySQL Connection!");
 
-        const sqlFilePath = path.join(__dirname, 'sql', 'truncate.sql');
+        const sqlFilePath = path.join(__dirname, '..', '..', 'sql', 'truncate.sql');
         const sql = fs.readFileSync(sqlFilePath, 'utf-8');
 
         const sqlQueries = sql

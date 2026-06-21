@@ -2,11 +2,11 @@
 CREATE TABLE IF NOT EXISTS sheets (
     sheet_id INT NOT NULL,
     spreadsheet_id VARCHAR(255) NOT NULL,
-    name VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
     sheet_index INT NOT NULL,
 
     PRIMARY KEY (sheet_id, spreadsheet_id),
-    UNIQUE KEY uk_spreadsheet_sheet_name (spreadsheet_id, name),
+    UNIQUE KEY uk_spreadsheet_sheet_name (spreadsheet_id, `name`),
     UNIQUE KEY uk_spreadsheet_sheet_index (spreadsheet_id, sheet_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -14,17 +14,17 @@ CREATE TABLE IF NOT EXISTS sheets (
 CREATE TABLE IF NOT EXISTS cells (
     spreadsheet_id VARCHAR(255) NOT NULL,
     sheet_id INT NOT NULL,
-    row INT NOT NULL,
-    col INT NOT NULL,
+    `row` INT NOT NULL,
+    `col` INT NOT NULL,
     value TEXT,
     value_type VARCHAR(255),
 
-    PRIMARY KEY (spreadsheet_id, sheet_id, row, col),
+    PRIMARY KEY (spreadsheet_id, sheet_id, `row`, `col`),
 
-    FOREIGN KEY (spreadsheet_id, sheet_id) REFERENCES sheets(spreadsheet_id, sheet_id) ON DELETE CASCADE
+    FOREIGN KEY (spreadsheet_id, sheet_id) REFERENCES sheets(spreadsheet_id, sheet_id) ON DELETE CASCADE,
 
     -- Індексація
-    INDEX idx_range_lookup (sheet_id, row, col)
+    INDEX idx_range_lookup (sheet_id, `row`, `col`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ПропертіСервіс

@@ -4,6 +4,7 @@
         "url": "mysql://username:password@host:port/database_name"
     },
     "gas": {
+        "path_to_code": "path_to_code",
         "activeSpreadsheetId": "activeSpreadsheetId",
         "defaultScriptProperty": {
             "key": "value"   
