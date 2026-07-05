@@ -10,7 +10,10 @@ const rawConfig = fs.readFileSync(CONFIG_PATH, 'utf-8');
 const jsonConfig = JSON.parse(rawConfig);
 
 const AppConfig = {
-    apps_script_path_src: jsonConfig.apps_script_path_src as string,
+    cloudflare: {
+        worker_url: jsonConfig.cloudflare.worker_url as string,
+        token: jsonConfig.cloudflare.token as string
+    },
     database: {
         url: jsonConfig.database.url as string
     },

@@ -1,5 +1,8 @@
 {
-    "apps_script_path_src": "apps\\script\\path\\src",
+    "cloudflare": {
+        "worker_url": "https://cloudflare-worker.com",
+        "token": "token"
+    },
     "database": {
         "url": "mysql://username:password@host:port/database_name"
     },
