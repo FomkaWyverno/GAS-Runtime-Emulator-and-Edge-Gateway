@@ -4,6 +4,7 @@ import SandboxGAS from './SandboxGAS.ts';
 import { TextOutput } from '../../emulator/utils/ContentService.ts';
 
 class HTTPServer {
+    
     private server: http.Server | null = null;
 
 
@@ -42,9 +43,16 @@ class HTTPServer {
             res.end(content);
             return;
         });
+
+        this.server.listen(3000, () => console.log(`[HTTPServer] - Start HTTPServer on port: ${port}`));
+    }
+
+    public stop() {
+        this.server?.close();
     }
 }
 
+export default new HTTPServer();
 
 // const server = http.createServer((req, res) => {
 //   // Нам потрібні тільки POST-запити з кодом для виконання

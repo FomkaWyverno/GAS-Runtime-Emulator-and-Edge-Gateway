@@ -10,3 +10,9 @@ dotenv/credentials.json
 
 dist/*
 dist
+
+.vscode/*
+.vscode
+
+Emulator/dotenv/config.json
+Emulator/dotenv/credentials.json
