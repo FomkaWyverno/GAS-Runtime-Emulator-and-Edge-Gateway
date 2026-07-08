@@ -1,7 +1,8 @@
 {
     "cloudflare": {
         "worker_url": "https://cloudflare-worker.com",
-        "token": "token"
+        "host_ping_token": "host_ping_token",
+        "host_request_token": "host-request-token"
     },
     "database": {
         "url": "mysql://username:password@host:port/database_name"

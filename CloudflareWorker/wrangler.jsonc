@@ -21,11 +21,7 @@
 		}
 	],
 	"vars": {
-		"telegram-bot-secret": "Mlend7rseletaskmandfr4wyverno1tarlechinove9ochkoF",
-		"telegram-bot-gas-url": "https://script.google.com/macros/s/AKfycbyXHR0TcqwNhE4liO1jAI8PhmbEegDs4dr2aB9eHa9fNQO9kTccOsbLfLU88Wn3GKDe/exec",
 		"telegram-bot-host-ping-expiration-ttl": "300",
-		"host-ping-token": "супер_секретний_пінг_токен",
-		"host-request-token": "host-request-token",
 	}
 	/**
 	 * Smart Placement

@@ -1,5 +1,5 @@
 import AppConfig from "../config/AppConfig.ts";
-
+import os from 'os'
 
 class PingPongService {
     private tunnelURL: string | null = null;
@@ -9,6 +9,22 @@ class PingPongService {
         this.tunnelURL = tunnelURL;
     }
 
+    private async pingServer(workerURL: string): Promise<void> {
+        const response = await fetch(`${workerURL}/host-ping`, {
+                'method': 'POST',
+                'headers': { 
+                    'Authorization': `Bearer ${AppConfig.cloudflare.host_ping_token}`,
+                    'Content-Type': 'application/json; charset=utf-8'
+                },
+                'body': JSON.stringify({
+                    'host_id': os.hostname(),
+                    'host_url': this.tunnelURL
+                })
+            });
+
+            console.log(`[PingPongService] - Ping Cloudflare worker response code: ${response.status}`)
+    }
+
     public start() {
         if (!this.tunnelURL) {
             console.warn(`[PingPongService] - Can't start PingPongService without tunnel URL`);
@@ -16,17 +32,10 @@ class PingPongService {
 
         const workerURL = AppConfig.cloudflare.worker_url;
 
-        this.interval = setInterval(async () => {
-            const response = await fetch(`${workerURL}/host-ping`, {
-                'method': 'POST',
-                'headers': { 'Authorization': `Bearer ${AppConfig.cloudflare.token}` },
-                'body': JSON.stringify({
-                    'host_id': 'my-id',
-                    'host_url': this.tunnelURL
-                })
-            });
+        this.pingServer(workerURL);
 
-            console.log(`[PingPongService] - Ping Cloudflare worker response code: ${response.status}`)
+        this.interval = setInterval(async () => {
+            this.pingServer(workerURL);
         }, 150000);
     }
 

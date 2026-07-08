@@ -12,7 +12,8 @@ const jsonConfig = JSON.parse(rawConfig);
 const AppConfig = {
     cloudflare: {
         worker_url: jsonConfig.cloudflare.worker_url as string,
-        token: jsonConfig.cloudflare.token as string
+        host_ping_token: jsonConfig.cloudflare.host_ping_token as string,
+        host_request_token: jsonConfig.cloudflare.host_request_token as string
     },
     database: {
         url: jsonConfig.database.url as string

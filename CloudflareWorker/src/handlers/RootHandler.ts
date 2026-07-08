@@ -10,7 +10,7 @@ interface DetermineURLs {
 }
 
 class RootHandler implements Handler {
-    async handle(request: Request, env: Env): Promise<Response> {
+    async handle(request: Request, env: SecureEnv): Promise<Response> {
         const headers: Record<string, string> = {};
         const body = await request.json() as any; // Telegram body
         for (let [key, value] of request.headers.entries()) {

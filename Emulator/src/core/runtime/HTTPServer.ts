@@ -2,20 +2,34 @@ import http from 'http'
 import DoPostMapper from './mappers/DoPostMapper.ts';
 import SandboxGAS from './SandboxGAS.ts';
 import { TextOutput } from '../../emulator/utils/ContentService.ts';
+import AppConfig from '../config/AppConfig.ts';
 
 class HTTPServer {
-    
+
     private server: http.Server | null = null;
 
 
     public start(port: number): void {
         this.server = http.createServer(async (req, res) => {
-            if (req.method !== 'POST') return; // Приймаємо лише ПОСТ
+            if (req.method !== 'POST') {
+                res.writeHead(405, { 'content-type': 'text/plain' });
+                res.end('Method Not Allowed')
+                return; // Приймаємо лише ПОСТ
+            }
+
+            const requestAuthToken = req.headers['x-auth-token'];
+            const authToken = AppConfig.cloudflare.host_request_token;
+
+            if (authToken !== requestAuthToken) {
+                res.writeHead(403, { 'content-type': 'text/plain' });
+                res.end('Access Denied');
+                return;
+            }
 
             const doPostEvent = await DoPostMapper.mapToDoPostEvent(req, new URL(req.url || '', `http://${req.headers.host}`)); // Мапиво у GAS івент
 
             const result = SandboxGAS.execute('doPost', [doPostEvent]) as TextOutput | string | undefined; // Виконуємо команду
-            
+
             if (!result) {
                 res.writeHead(200, { "content-type": 'text/plain' }); // якщо результату немає просто повертає інфу що все ок.
                 res.end();
