@@ -28,7 +28,19 @@ class HTTPServer {
 
             const doPostEvent = await DoPostMapper.mapToDoPostEvent(req, new URL(req.url || '', `http://${req.headers.host}`)); // Мапиво у GAS івент
 
-            const result = SandboxGAS.execute('doPost', [doPostEvent]) as TextOutput | string | undefined; // Виконуємо команду
+            let result: TextOutput | string | undefined;
+            try {
+                console.log(`[HTTPServer] - Start SandboxGAS run function - doPost`);
+                result = SandboxGAS.execute('doPost', [doPostEvent]) as TextOutput | string | undefined; // Виконуємо команду
+            } catch (vmError: any) {
+                console.error(`[HTTPServer] - Error during GAS Sandbox execution:`);
+                console.error(vmError.stack || vmError.message || vmError);
+
+                res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' });
+                res.end('Internal Server Error inside Sandbox!');
+                return;
+            }
+            
 
             if (!result) {
                 res.writeHead(200, { "content-type": 'text/plain' }); // якщо результату немає просто повертає інфу що все ок.
@@ -63,6 +75,7 @@ class HTTPServer {
 
     public stop() {
         this.server?.close();
+        console.log(`[HTTPServer] - HTTPServer stopped`)
     }
 }
 

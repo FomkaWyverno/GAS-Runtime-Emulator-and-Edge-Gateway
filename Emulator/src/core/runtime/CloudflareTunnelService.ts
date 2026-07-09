@@ -1,4 +1,4 @@
-import { ChildProcess, exec } from "child_process";
+import { ChildProcess, spawn } from "child_process";
 
 class CloudflareTunnelService {
     private tunnelProcess: ChildProcess | null = null;
@@ -8,12 +8,13 @@ class CloudflareTunnelService {
         if (this.tunnelUrl) return this.tunnelUrl;
 
         return new Promise<string>((resolve, reject) => {
-            this.tunnelProcess = exec(`cloudflared tunnel --url http://127.0.0.1:${port}`);
+            this.tunnelProcess = spawn(`cloudflared`, ['tunnel', '--url', `http://127.0.0.1:${port}`]);
             let isResolved = false;
 
-            this.tunnelProcess.stderr?.on('data', async (data: string) => {
+            this.tunnelProcess.stderr?.on('data', async (chunk: Buffer) => {
                 if (isResolved) return; // Якщо проміс вже оброблений скіпаємо
 
+                const data = chunk.toString();
                 const match = data.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/)
                 if (match) {
                     isResolved = true;
@@ -47,6 +48,7 @@ class CloudflareTunnelService {
         if (this.tunnelProcess) {
             this.tunnelProcess.kill('SIGTERM');
             this.cleanUp();
+            console.log(`[CloudflareTunnelService] - Tunnel stopped`);
         }
     }
 

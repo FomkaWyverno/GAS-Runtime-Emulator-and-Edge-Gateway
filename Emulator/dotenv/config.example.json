@@ -14,8 +14,7 @@
             "key": "value"   
         }
     },
-    "sync": {
-        "spreadsheetId": "spreadsheetId",
-        "sheets": ["Array", "with", "google", "sheets", "for", "synchronization", "to", "local", "database"]
+    "sync_sheets": {
+        "spreadsheetId": ["Array", "with", "google", "sheets", "for", "synchronization", "to", "local", "database"]
     }
 }

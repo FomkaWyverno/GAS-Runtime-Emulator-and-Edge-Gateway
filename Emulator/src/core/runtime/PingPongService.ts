@@ -43,7 +43,7 @@ class PingPongService {
         if (this.interval) {
             clearInterval(this.interval);
             this.interval = null;
-            console.log(`[PingPongService] - Service stopped`);
+            console.log(`[PingPongService] - PingPongService stopped`);
         }
     }
 }
