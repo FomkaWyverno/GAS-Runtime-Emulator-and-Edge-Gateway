@@ -8,7 +8,7 @@ export interface HostData {
 
 
 class HostPingHandler implements Handler {
-    async handle(request: Request, env: SecureEnv): Promise<Response> {
+    async handle(request: Request, env: Env): Promise<Response> {
         try {
             const authHeader = request.headers.get('Authorization');
             const expectedToken = `Bearer ${env["host-ping-token"]}`

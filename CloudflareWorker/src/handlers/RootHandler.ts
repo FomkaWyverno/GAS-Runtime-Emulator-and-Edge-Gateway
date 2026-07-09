@@ -1,4 +1,3 @@
-import { url } from "node:inspector";
 import { KVNamespaceKeys } from "../enums/KVNamespaceKeys";
 import { Handler } from "./Handler";
 import { HostData } from "./HostPingHandler";
@@ -10,7 +9,8 @@ interface DetermineURLs {
 }
 
 class RootHandler implements Handler {
-    async handle(request: Request, env: SecureEnv): Promise<Response> {
+    async handle(request: Request, env: Env): Promise<Response> {
+        console.log(`[RootHandler] - Handling request`);
         const headers: Record<string, string> = {};
         const body = await request.json() as any; // Telegram body
         for (let [key, value] of request.headers.entries()) {
@@ -22,6 +22,7 @@ class RootHandler implements Handler {
         const tg_api_webhook_secret = headers['x-telegram-bot-api-secret-token']
 
         if (webhook_secret !== tg_api_webhook_secret) {
+            console.log(`[RootHandler] - WebhookSecret dont correct!`)
             return new Response('Access Denied', { status: 403 });
         }
 
@@ -54,16 +55,13 @@ class RootHandler implements Handler {
                     body: JSON.stringify(body)
                 }, 30000);
 
-                if (response.ok || response.status < 500) {
-                    console.log(`[Gateway] - Successfuly got response from ${url}`);
-                    break;
-                }
 
-                console.warn(`[Gateway] - Host ${url} return status ${response.status}. Attempt next url...`);
+                console.log(`[Gateway] - Successfuly got response from ${url} with status: ${response.status}`);
+                break;
             } catch (err: any) {
                 lastError = err;
                 if (err.name === 'AbortError') {
-                    console.warn(`[Gateway] - Timeout is expired for host: ${url}`);
+                    console.warn(`[Gateway] - Timeout is expired for host: ${url}. Attempting next url...`);
                 } else {
                     console.warn(`[Gateway] - Network error for ${url}: ${err.message || err}`)
                 }

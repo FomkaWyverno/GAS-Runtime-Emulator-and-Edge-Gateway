@@ -19,9 +19,10 @@ export default {
 		const url = new URL(request.url);
 		const pathname = url.pathname;
 
-		if (request.method !== 'POST') return new Response('Access Denied', { status: 403 });
+		console.log(`Pathname: ${pathname}`);
 
-		if (pathname === 'host-ping') return HostPingHandler.handle(request, env);
+		if (request.method !== 'POST') return new Response('Method Not Allowed!', { status: 405 });
+		if (pathname === '/host-ping') return HostPingHandler.handle(request, env);
 
 		return RootHandler.handle(request, env);
 	},
