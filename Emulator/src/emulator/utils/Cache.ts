@@ -8,9 +8,9 @@ export class Cache {
     private readonly MAX_KEY_SIZE_CHARS = 250;
     private encoder = new TextEncoder();
 
-    constructor(
-        private store: Map<string, CacheItem>
-    ) { }
+    private store: Map<string, CacheItem> = new Map();
+    
+    constructor() { }
 
     /**
      * Gets the cached value for the given key, or null if none is found.

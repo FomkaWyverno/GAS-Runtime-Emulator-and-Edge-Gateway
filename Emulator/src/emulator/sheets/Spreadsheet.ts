@@ -33,7 +33,7 @@ export class Spreadsheet {
     private loadSheetsIfNeeded(): void {
         if (this.isLoaded) return;
 
-        const sql = 'SELECT `sheet_id`, `sheet_index`, `name` FROM `sheets` WHERE `spreadsheet` = ? ORDER BY `sheet_index` ASC;';
+        const sql = 'SELECT `sheet_id`, `sheet_index`, `name` FROM `sheets` WHERE `spreadsheet_id` = ? ORDER BY `sheet_index` ASC;';
         const entities = Database.query<SheetEntity>(sql, [this.getId()]);
 
         for (const entity of entities) {

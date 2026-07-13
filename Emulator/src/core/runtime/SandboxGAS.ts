@@ -72,7 +72,7 @@ class SandboxGAS {
             Blob,
             Cache,
             CacheService,
-            Console,
+            console: Console,
             ContentService,
             Lock,
             LockService,

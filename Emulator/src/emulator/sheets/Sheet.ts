@@ -68,7 +68,7 @@ export class Sheet {
      * @returns The last row of the sheet that contains content.
      */
     public getLastRow(): number {
-        const sql = 'SELECT MAX(row) as max_row FROM `cells` WHERE `spreadsheet_id` = ? AND `sheet_id` = ?;';
+        const sql = 'SELECT MAX(\`row\`) as max_row FROM `cells` WHERE `spreadsheet_id` = ? AND `sheet_id` = ?;';
         const result = Database.query<{ max_row: number }>(sql, [this.getParent().getId(), this.getSheetId()]);
 
         return result?.[0]?.max_row ?? 0;

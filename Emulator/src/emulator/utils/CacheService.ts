@@ -1,3 +1,5 @@
+import { Cache } from "./Cache.ts";
+
 export class CacheService {
     private static scriptCache: Cache | null = null;
 

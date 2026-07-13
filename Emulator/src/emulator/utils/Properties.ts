@@ -22,7 +22,7 @@ export class Properties {
      * @returns this Properties store, for chaining
      */
     public setProperty(key: string, value: string): Properties {
-        const sql = 'INSERT INTO `script_properties` (`property_key`, `property_value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `property_value` = VALUES(`property_values`);';
+        const sql = 'INSERT INTO `script_properties` (`property_key`, `property_value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `property_value` = VALUES(`property_value`);';
         Database.query(sql, [key, value]);
 
         return this;

@@ -1,6 +1,7 @@
 import Database from "../../core/database/Database.js";
 import { Sheet } from "./Sheet.js";
 import { CellEntity, CellValueType } from "../@types/sheets/cell.entity.js";
+import GasEventEmitter, { Cell } from "../../core/events/GasEventEmitter.ts";
 
 export class Range {
     constructor(
@@ -139,6 +140,8 @@ export class Range {
         const spreadsheetId = this.getSheet().getParent().getId();
         const sheetId = this.getSheet().getSheetId();
 
+        const updatedCells: Cell[] = [];
+
         for (let r = 0; r < this.getNumRows(); r++) {
             const rowData = values[r];
 
@@ -164,13 +167,20 @@ export class Range {
                     value,
                     valueType
                 );
+
+                updatedCells.push({
+                    row: actualRow,
+                    col: actualCol,
+                    value: value,
+                    value_type: valueType
+                })
             }
         }
 
         if (valuePlaceholders.length === 0) return this;
 
         const sql = `
-            INSERT INTO cells (spreadsheet_id, sheet_id, \`row\`, \`value\`, value_type)
+            INSERT INTO cells (spreadsheet_id, sheet_id, \`row\`, \`col\`, \`value\`, value_type)
             VALUES ${valuePlaceholders.join(', ')}
             ON DUPLICATE KEY UPDATE
                 \`value\` = VALUES(\`value\`),
@@ -178,6 +188,12 @@ export class Range {
         `;
 
         Database.query(sql, bindValues);
+
+        GasEventEmitter.emit('update_range', {
+            spreadsheet_id: spreadsheetId,
+            sheet_id: sheetId,
+            cells: updatedCells
+        });
 
         return this;
     }

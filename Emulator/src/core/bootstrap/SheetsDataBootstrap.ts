@@ -46,7 +46,7 @@ class SheetsDataBootstrap implements BootStrap {
                 continue;
             }
             console.log(`[SheetsDataBootstrap] - Create sheets in database`)
-            this.createSheetToDatabase(existsSheetNames);
+            this.createSheetToDatabase(spreadsheetId, existsSheetNames);
             console.log(`[SheetsDataBootstrap] - Insertions data from sheets to Database`);
             this.bulkInsertSheetsValuesToDatabase(valueSheets);
         }
@@ -85,9 +85,10 @@ class SheetsDataBootstrap implements BootStrap {
 
     /**
      * Створює записи для табличок
+     * @param spreadsheetId ідентифікатор ел. таблиці
      * @param sheets таблички які потрібно записати у базі даних
      */
-    private createSheetToDatabase(sheets: sheets_v4.Schema$Sheet[]) {
+    private createSheetToDatabase(spreadsheetId: string, sheets: sheets_v4.Schema$Sheet[]) {
         const placeholders = sheets.map(() => '(?, ?, ?, ?)').join(', ');
         const sql = `
             INSERT INTO \`sheets\` (sheet_id, spreadsheet_id, \`name\`, sheet_index)
@@ -96,7 +97,7 @@ class SheetsDataBootstrap implements BootStrap {
 
         const flatValues = sheets.reduce((acc, sheet) => {
             const sheetProp = sheet.properties!;
-            acc.push(sheetProp.sheetId, AppConfig.sync_sheets.spreadsheetId, sheetProp.title, sheetProp.index);
+            acc.push(sheetProp.sheetId, spreadsheetId, sheetProp.title, sheetProp.index);
             return acc;
         }, [] as any[]);
 

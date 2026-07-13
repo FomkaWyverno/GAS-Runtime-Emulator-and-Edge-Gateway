@@ -55,6 +55,12 @@ class RootHandler implements Handler {
                     body: JSON.stringify(body)
                 }, 30000);
 
+                const GATEWAY_ERRORS = [502, 503, 504, 530];
+
+                if (GATEWAY_ERRORS.includes(response.status) && url !== env['telegram-bot-gas-url']) {
+                    console.error(`[Gateway] - Server is OFFLINE or Tunnel dead. Status: ${response.status}. Switch to GAS url...`);
+                    continue;
+                }
 
                 console.log(`[Gateway] - Successfuly got response from ${url} with status: ${response.status}`);
                 break;

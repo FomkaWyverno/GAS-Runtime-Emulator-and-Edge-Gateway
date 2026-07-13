@@ -4,7 +4,7 @@ import { Blob } from "../utils/Blob.js";
 import { HTTPResponse } from './HTTPResponse.js';
 
 export class UrlFetchApp {
-    fetch(url: string, params: URLFetchRequestOptions = {}) {
+    static fetch(url: string, params: URLFetchRequestOptions = {}) {
         const method = (params.method || 'get').toLowerCase();
         const followRedirects = params.followRedirects !== false; // default: true
         const muteHttpExceptions = params.muteHttpExceptions === true; // default: false
