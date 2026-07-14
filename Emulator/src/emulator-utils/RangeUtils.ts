@@ -6,6 +6,14 @@ export interface ParsedRange {
     numColumns: number;
 }
 
+export interface RangeToA1Options {
+    sheetName?: string | null;
+    row: number;
+    column: number;
+    numRows?: number;
+    numColumns?: number;
+}
+
 interface ParsedCell {
     row: number;
     column: number;
@@ -49,6 +57,28 @@ class RangeUtils {
         }
     }
 
+    public toA1Notation(options: RangeToA1Options): string {
+        const { sheetName, row, column, numRows = 1, numColumns = 1 } =  options;
+    
+        if (row <= 0 || column <= 0) throw new Error(`Row and column must be greater than 0!`);
+
+        const startLetters = this.getColLetters(column);
+        const startCell = `${startLetters}${row}`;
+
+        let rangePart = startCell;
+
+        if (numRows > 1 || numColumns > 1) {
+            const endRow = row + numRows - 1;
+            const endCol = column + numColumns - 1;
+            const endLetters = this.getColLetters(endCol);
+            rangePart = `${startCell}:${endLetters}${endRow}`;
+        }
+
+        if (sheetName) return `'${sheetName}'!${rangePart}`;
+
+        return rangePart;
+    }
+
     private parseCell(cellNotation: string): ParsedCell {
         const match = cellNotation.match(/^([A-Z]+)([0-9]+)$/i);
 
@@ -66,6 +96,22 @@ class RangeUtils {
             row: row,
             column: column
         }
+    }
+
+    /**
+     * Конвертує номер колонки (1 -> A, 28 -> AB) у літери.
+     */
+    private getColLetters(col: number): string {
+        let temp = col;
+        let letters = '';
+
+        while (temp > 0) {
+            const modulo = (temp - 1) % 26;
+            letters = String.fromCharCode(65 + modulo) + letters;
+            temp = Math.floor((temp - modulo) / 26);
+        }
+
+        return letters;
     }
 }
 

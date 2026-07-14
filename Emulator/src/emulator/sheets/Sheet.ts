@@ -3,6 +3,7 @@ import RangeUtils from "../../emulator-utils/RangeUtils.js";
 import { Range } from "./Range.js";
 import { Spreadsheet } from "./Spreadsheet.js";
 import { CellEntity, CellValueType } from "../@types/sheets/cell.entity.js";
+import GasEventEmitter from "../../core/events/GasEventEmitter.ts";
 
 export class Sheet {
     constructor(
@@ -105,6 +106,13 @@ export class Sheet {
 
         Database.query(sql, [numColumns, this.getParent().getId(), this.getSheetId(), columnIndex])
 
+        GasEventEmitter.emit('onInsertColumns', {
+            spreadsheet_id: this.getParent().getId(),
+            sheet_id: this.getSheetId(),
+            column_index: columnIndex,
+            num_columns: numColumns
+        });
+
         return this;
     }
 
@@ -161,6 +169,13 @@ export class Sheet {
                 `,[finalOffset, this.getParent().getId(), this.getSheetId(), tempOffset + startCol, tempOffset + endCol], transactionId);
         });
 
+        GasEventEmitter.emit('onMoveColumns', {
+            spreadsheet_id: this.getParent().getId(),
+            sheet_id: this.getSheetId(),
+            columnSpec: columnSpec,
+            destination_index: destinationIndex
+        })
+
         return this;
     }
 
@@ -171,7 +186,6 @@ export class Sheet {
      * @returns The sheet, useful for method chaining.
      */
     public appendRow(rowContents: Object[]): Sheet {
-
         const nextRow = this.getLastRow() + 1;
 
         const cellsToInsert: CellEntity[] = rowContents.map((rawValue, idx) => {
@@ -214,6 +228,13 @@ export class Sheet {
 
         this.upsertCellsBulk(cellsToInsert);
 
+        GasEventEmitter.emit('onAppendRow', {
+            spreadsheet_id: this.getParent().getId(),
+            sheet_id: this.getSheetId(),
+            row: nextRow,
+            cells: cellsToInsert.map(entity => ({ value: entity.value, value_type: entity.value_type }))
+        })
+
         return this;
     }
 
@@ -224,6 +245,12 @@ export class Sheet {
     public clearContents(): Sheet {
         const sql = 'DELETE FROM `cells` WHERE `spreadsheet_id` = ? AND `sheet_id` = ?;'
         Database.query(sql, [this.getParent().getId(), this.getSheetId()]);
+
+        GasEventEmitter.emit('onClearContents', {
+            spreadsheet_id: this.getParent().getId(),
+            sheet_id: this.getSheetId()
+        });
+
         return this;
     }
 
@@ -256,6 +283,13 @@ export class Sheet {
                     AND col >= ?;
             `;
             Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), columnPosition + howMany], transactionId);
+
+            GasEventEmitter.emit('onDeleteColumn', {
+                spreadsheet_id: this.getParent().getId(),
+                sheet_id: this.getSheetId(),
+                column_position: columnPosition,
+                how_many: howMany
+            });
 
             return this;
         });
@@ -292,6 +326,13 @@ export class Sheet {
             `;
 
             Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), rowPosition + howMany], transactionId);
+
+            GasEventEmitter.emit('onDeleteRows', {
+                spreadsheet_id: this.getParent().getId(),
+                sheet_id: this.getSheetId(),
+                row_position: rowPosition,
+                how_many: howMany
+            })
 
             return this;
         });

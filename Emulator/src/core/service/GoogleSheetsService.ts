@@ -1,4 +1,5 @@
 import { google, sheets_v4 } from "googleapis";
+import { GaxiosResponseWithHTTP2 } from "googleapis-common/build/src/http2.js";
 
 
 class GoogleSheetsService {
@@ -55,6 +56,24 @@ class GoogleSheetsService {
             console.error(`Cannot update range. SpreadsheetId: ${spreadsheetId}, Range: ${range}`, error);
             throw error;
         }
+    }
+
+    public async insertColumns(spreadsheetId: string, sheetId: number, startIndex: number, endIndex: number): Promise<GaxiosResponseWithHTTP2<sheets_v4.Schema$BatchUpdateSpreadsheetResponse>> {
+        return await this.sheets.spreadsheets.batchUpdate({ spreadsheetId: spreadsheetId, requestBody: {
+            requests: [
+                {
+                    insertDimension: {
+                        range: {
+                            sheetId: sheetId,
+                            dimension: 'COLUMNS',
+                            startIndex: startIndex,
+                            endIndex: endIndex
+                        },
+                        inheritFromBefore: true
+                    }
+                }
+            ]
+        }});
     }
 
     /**

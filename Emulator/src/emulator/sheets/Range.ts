@@ -1,7 +1,8 @@
 import Database from "../../core/database/Database.js";
 import { Sheet } from "./Sheet.js";
 import { CellEntity, CellValueType } from "../@types/sheets/cell.entity.js";
-import GasEventEmitter, { Cell } from "../../core/events/GasEventEmitter.ts";
+import GasEventEmitter from "../../core/events/GasEventEmitter.ts";
+import { Cell } from "../@types/sheets/cell.js";
 
 export class Range {
     constructor(
@@ -140,7 +141,7 @@ export class Range {
         const spreadsheetId = this.getSheet().getParent().getId();
         const sheetId = this.getSheet().getSheetId();
 
-        const updatedCells: Cell[] = [];
+        const cellMatrix: Cell[][] = [];
 
         for (let r = 0; r < this.getNumRows(); r++) {
             const rowData = values[r];
@@ -151,11 +152,13 @@ export class Range {
 
             const actualRow = this.getRow() + r;
 
+            cellMatrix.push([]);
+
             for (let c = 0; c < this.getNumColumns(); c++) {
                 const actualCol = this.getColumn() + c;
                 const rawValue = rowData[c];
 
-                const { value, valueType } = this.determinateValueAndType(rawValue);
+                const { value, value_type } = this.determinateValueAndType(rawValue);
 
                 valuePlaceholders.push('(?, ?, ?, ?, ?, ?)');
 
@@ -165,15 +168,13 @@ export class Range {
                     actualRow,
                     actualCol,
                     value,
-                    valueType
+                    value_type
                 );
 
-                updatedCells.push({
-                    row: actualRow,
-                    col: actualCol,
+                cellMatrix[cellMatrix.length - 1].push({
                     value: value,
-                    value_type: valueType
-                })
+                    value_type: value_type
+                });
             }
         }
 
@@ -189,10 +190,12 @@ export class Range {
 
         Database.query(sql, bindValues);
 
-        GasEventEmitter.emit('update_range', {
+        GasEventEmitter.emit('onUpdateRange', {
             spreadsheet_id: spreadsheetId,
             sheet_id: sheetId,
-            cells: updatedCells
+            row: this.row,
+            col: this.column,
+            cells: cellMatrix
         });
 
         return this;
@@ -225,23 +228,23 @@ export class Range {
         }
     }
 
-    private determinateValueAndType(val: number | boolean | Date | string): { value: string, valueType: CellValueType } {
+    private determinateValueAndType(val: number | boolean | Date | string): Cell {
         if (val === null || val === undefined || val === '') {
-            return { value: '', valueType: 'STRING' }
+            return { value: '', value_type: 'STRING' }
         }
 
         if (typeof val === 'boolean') {
-            return { value: val ? 'TRUE' : 'FALSE', valueType: 'BOOLEAN' }
+            return { value: val ? 'TRUE' : 'FALSE', value_type: 'BOOLEAN' }
         }
 
         if (typeof val === 'number') {
-            return { value: String(val), valueType: 'NUMBER' }
+            return { value: String(val), value_type: 'NUMBER' }
         }
 
         if (val instanceof Date) {
-            return { value: val.toISOString(), valueType: 'DATE' }
+            return { value: val.toISOString(), value_type: 'DATE' }
         }
 
-        return { value: String(val), valueType: 'STRING' }
+        return { value: String(val), value_type: 'STRING' }
     }
 }

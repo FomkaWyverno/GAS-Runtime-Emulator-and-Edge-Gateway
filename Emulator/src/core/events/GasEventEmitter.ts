@@ -1,21 +1,64 @@
 import EventEmitter from "events";
-import { CellValueType } from "../../emulator/@types/sheets/cell.entity.js";
+import { Cell } from "../../emulator/@types/sheets/cell.js";
+import { Range } from "../../emulator/sheets/Range.ts";
 
-export interface Cell {
-    row: number;
-    col: number;
-    value: string;
-    value_type: CellValueType;
-}
-
-export interface GasUpdateRange {
+export interface GasUpdateRangePayload {
     spreadsheet_id: string;
     sheet_id: number;
-    cells: Cell[];
+    row: number;
+    col: number;
+    cells: Cell[][];
+}
+
+export interface GasInsertColumnsPayload {
+    spreadsheet_id: string;
+    sheet_id: number;
+    column_index: number;
+    num_columns: number;
+}
+
+export interface GasMoveColumnsPayload {
+    spreadsheet_id: string;
+    sheet_id: number;
+    columnSpec: Range;
+    destination_index: number;
+}
+
+export interface GasAppendRowPayload {
+    spreadsheet_id: string;
+    sheet_id: number;
+    row: number;
+    cells: Cell[]
+}
+
+export interface GasClearContentsPayload {
+    spreadsheet_id: string;
+    sheet_id: number;
+
+}
+
+export interface GasDeleteColumnPayload {
+    spreadsheet_id: string;
+    sheet_id: number;
+    column_position: number;
+    how_many: number;
+}
+
+export interface GasDeleteRowsPayload {
+    spreadsheet_id: string;
+    sheet_id: number;
+    row_position: number;
+    how_many: number;
 }
 
 export type GasEventsMap = {
-    update_range: [payload: GasUpdateRange];
+    onUpdateRange: [payload: GasUpdateRangePayload];
+    onInsertColumns: [payload: GasInsertColumnsPayload];
+    onMoveColumns: [payload: GasMoveColumnsPayload];
+    onAppendRow: [payload: GasAppendRowPayload];
+    onClearContents: [payload: GasClearContentsPayload];
+    onDeleteColumn: [payload: GasDeleteColumnPayload];
+    onDeleteRows: [payload: GasDeleteRowsPayload];
 }
 
 export type StrictEventEmitter<T extends Record<string, any[]>> = {
