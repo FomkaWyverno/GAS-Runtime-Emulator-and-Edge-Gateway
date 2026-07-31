@@ -1,5 +1,5 @@
 import { sheets_v4 } from "googleapis";
-import { GasEventsMap, GasInsertColumnsPayload, GasUpdateRangePayload } from "../events/GasEventEmitter.ts";
+import { GasAppendRowPayload, GasClearContentsPayload, GasEventsMap, GasInsertColumnsPayload, GasMoveColumnsPayload, GasUpdateRangePayload } from "../events/GasEventEmitter.ts";
 import GoogleSheetsService from "./GoogleSheetsService.ts";
 import RangeUtils from "../../emulator-utils/RangeUtils.ts";
 
@@ -41,15 +41,15 @@ class GasSynchronizerService {
                     break;
                 }
                 case "onMoveColumns": {
-
-                    break
+                    await this.onMoveColumns(task.payload);
+                    break;
                 }
                 case "onAppendRow": {
-
-                    break
+                    this.onAppendRow(task.payload);
+                    break;
                 }
                 case "onClearContents": {
-
+                    await this.onClearContents(task.payload);
                     break
                 }
                 case "onDeleteColumn": {
@@ -73,7 +73,7 @@ class GasSynchronizerService {
         if (!sheetName) throw new Error(`Spreadsheet don't has sheet with sheet_id: ${sheet_id}`);
 
         const rawValues: any[][] = cells.map(row => row.map(cell => cell.value));
-        
+
         const range = RangeUtils.toA1Notation({
             sheetName: sheetName,
             row: row,
@@ -89,8 +89,63 @@ class GasSynchronizerService {
     private async onInsertColumns(payload: GasInsertColumnsPayload) {
         const { spreadsheet_id, sheet_id, column_index, num_columns } = payload;
 
-        await GoogleSheetsService.insertColumns(spreadsheet_id, sheet_id, column_index-1, column_index + num_columns - 1)
+        await GoogleSheetsService.insertColumns(spreadsheet_id, sheet_id, column_index - 1, column_index + num_columns - 1);
         console.log(`[GasSynchronizerService] - Successufully insert at position ${column_index} ${num_columns} columns in spreadsheet_id: ${spreadsheet_id}.`);
+    }
+
+    private async onMoveColumns(payload: GasMoveColumnsPayload) {
+        const { spreadsheet_id, sheet_id, columnSpec, destination_index } = payload;
+        const startCol = columnSpec.getColumn();
+        const numCols = columnSpec.getNumColumns();
+
+        const googleStartIndex = startCol - 1;
+        const googleEndIndex = googleStartIndex + numCols;
+        const googleDestinationIndex = destination_index - 1;
+
+        await GoogleSheetsService.moveColumns(
+            spreadsheet_id,
+            sheet_id,
+            googleStartIndex,
+            googleEndIndex,
+            googleDestinationIndex
+        );
+
+        console.log(`[GasSynchronizerService] - Successufully move columns from column index ${startCol} number of columns ${numCols}`);
+    }
+
+    private async onAppendRow(payload: GasAppendRowPayload) {
+        const { spreadsheet_id, sheet_id, row, cells } = payload;
+
+        if (!cells || cells.length === 0) return;
+
+        const spreadsheetMetadata = await this.getSpreadsheetMetadata(spreadsheet_id);
+        const sheet = spreadsheetMetadata.sheets?.find(s => s.properties?.sheetId === sheet_id);
+
+        if (!sheet || !sheet.properties?.title) throw new Error(`Spreadsheet doesn't have a sheet with sheet_id: ${sheet_id}`);
+
+        const sheetName = sheet.properties.title;
+
+        const rawValues = cells.map(cell => cell.value);
+        const range = `'${sheetName}'`;
+
+        await GoogleSheetsService.appendRow(spreadsheet_id, range, [rawValues]);
+        console.log(`[GasSynchronizerService] - Successufully append row in sheet '${sheetName}' in spreadsheet_id: ${spreadsheet_id}`);
+
+    }
+
+    private async onClearContents(payload: GasClearContentsPayload) {
+        const { spreadsheet_id, sheet_id } = payload;
+
+        const spreadsheetMetadata = await this.getSpreadsheetMetadata(spreadsheet_id);
+        const sheet = spreadsheetMetadata.sheets?.find(s => s.properties?.sheetId === sheet_id);
+
+        if (!sheet || !sheet.properties?.title) throw new Error(`Spreadsheet doesn't have a sheet with sheet_id: ${sheet_id}`);
+
+        const sheetName = sheet.properties.title;
+        const range = `'${sheetName}'`;
+
+        await GoogleSheetsService.clearContents(spreadsheet_id, range);
+        console.log(`[GasSynchronizerService] - Successufully clear contents in sheet '${sheetName}' in spreadsheet_id: ${spreadsheet_id}`);
     }
 
     /**

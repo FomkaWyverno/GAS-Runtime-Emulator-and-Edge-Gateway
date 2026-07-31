@@ -59,21 +59,83 @@ class GoogleSheetsService {
     }
 
     public async insertColumns(spreadsheetId: string, sheetId: number, startIndex: number, endIndex: number): Promise<GaxiosResponseWithHTTP2<sheets_v4.Schema$BatchUpdateSpreadsheetResponse>> {
-        return await this.sheets.spreadsheets.batchUpdate({ spreadsheetId: spreadsheetId, requestBody: {
-            requests: [
-                {
-                    insertDimension: {
-                        range: {
-                            sheetId: sheetId,
-                            dimension: 'COLUMNS',
-                            startIndex: startIndex,
-                            endIndex: endIndex
-                        },
-                        inheritFromBefore: true
+        return await this.sheets.spreadsheets.batchUpdate({
+            spreadsheetId: spreadsheetId, requestBody: {
+                requests: [
+                    {
+                        insertDimension: {
+                            range: {
+                                sheetId: sheetId,
+                                dimension: 'COLUMNS',
+                                startIndex: startIndex,
+                                endIndex: endIndex
+                            },
+                            inheritFromBefore: true
+                        }
                     }
-                }
-            ]
-        }});
+                ]
+            }
+        });
+    }
+
+    public async moveColumns(
+        spreadsheetId: string,
+        sheetId: number,
+        startIndex: number,
+        endIndex: number,
+        destinationIndex: number
+    ): Promise<sheets_v4.Schema$BatchUpdateSpreadsheetResponse> {
+        const response = await this.sheets.spreadsheets.batchUpdate({
+            spreadsheetId: spreadsheetId,
+            requestBody: {
+                requests: [
+                    {
+                        moveDimension: {
+                            source: {
+                                sheetId: sheetId,
+                                dimension: 'COLUMNS',
+                                startIndex: startIndex,
+                                endIndex: endIndex
+                            },
+                            destinationIndex: destinationIndex
+                        }
+                    }
+                ]
+            }
+        });
+
+        return response.data;
+    }
+
+    public async appendRow(
+        spreadsheetId: string,
+        range: string,
+        values: any[][]
+    ): Promise<sheets_v4.Schema$AppendValuesResponse> {
+        const response = await this.sheets.spreadsheets.values.append({
+            spreadsheetId: spreadsheetId,
+            range: range,
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: 'INSERT_ROWS',
+            requestBody: {
+                values: values
+            }
+        });
+
+        return response.data;
+
+    }
+
+    public async clearContents(
+        spreadsheetId: string,
+        range: string
+    ): Promise<sheets_v4.Schema$ClearValuesResponse> {
+        const response = await this.sheets.spreadsheets.values.clear({
+            spreadsheetId: spreadsheetId,
+            range: range
+        });
+
+        return response.data;
     }
 
     /**
