@@ -38,6 +38,25 @@
 
 Нижче наведено таблицю відповідності реалізованих методів до оригінального API Google Apps Script.
 
+## WebApps
+
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+  <thead>
+    <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Метод</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Статус</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Опис</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>doPost</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Подібна поведінка як у Google Apps Script doPost функції.</td>
+    </tr>
+  </tbody>
+</table>
+
 ## Utilities
 
 <table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
