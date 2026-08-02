@@ -10,11 +10,11 @@ const PORT = 3000;
 async function main() {
     console.log(`[Main] - AppBootstrap`);
     await AppBootstrap.boot();
+    console.log(`[Main] - Start HTTP Server`)
+    await HTTPServer.start(PORT);
     console.log(`[Main] - Start ClouflareTunnel`)
     const tunnelURL = await CloudflareTunnelService.startTunnel(PORT);
     console.log(`[Main] - Started tunnel: ${tunnelURL}`);
-    console.log(`[Main] - Start HTTP Server`)
-    HTTPServer.start(PORT);
     
     console.log(`[Main] - Start PingPongService`)
     PingPongService.setTunnelURL(tunnelURL);

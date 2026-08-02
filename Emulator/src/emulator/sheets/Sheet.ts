@@ -284,7 +284,7 @@ export class Sheet {
             `;
             Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), columnPosition + howMany], transactionId);
 
-            GasEventEmitter.emit('onDeleteColumn', {
+            GasEventEmitter.emit('onDeleteColumns', {
                 spreadsheet_id: this.getParent().getId(),
                 sheet_id: this.getSheetId(),
                 column_position: columnPosition,

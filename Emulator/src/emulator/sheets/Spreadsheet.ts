@@ -1,4 +1,5 @@
 import Database from "../../core/database/Database.js";
+import GasEventEmitter from "../../core/events/GasEventEmitter.ts";
 import { Sheet } from "./Sheet.js";
 import crypto from 'crypto'
 
@@ -120,6 +121,13 @@ export class Spreadsheet {
         const newSheet = new Sheet(this, sheetId, sheetName, sheetIndex);
         this.sheetMap.set(sheetId, newSheet);
 
+        GasEventEmitter.emit('onInsertSheet', {
+            spreadsheet_id: this.getId(),
+            sheet_id: sheetId,
+            sheet_name: sheetName,
+            sheet_index: sheetIndex,
+            template_sheet_id: options?.template?.getSheetId()
+        });
         return newSheet;
     }
 

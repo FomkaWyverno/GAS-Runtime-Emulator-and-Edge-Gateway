@@ -1,5 +1,5 @@
 import { sheets_v4 } from "googleapis";
-import { GasAppendRowPayload, GasClearContentsPayload, GasEventsMap, GasInsertColumnsPayload, GasMoveColumnsPayload, GasUpdateRangePayload } from "../events/GasEventEmitter.ts";
+import { GasAppendRowPayload, GasClearContentsPayload, GasDeleteColumnPayload, GasDeleteRowsPayload, GasEventsMap, GasInsertColumnsPayload, GasInsertSheetPayload as GasInsertSheetPayload, GasMoveColumnsPayload, GasUpdateRangePayload } from "../events/GasEventEmitter.ts";
 import GoogleSheetsService from "./GoogleSheetsService.ts";
 import RangeUtils from "../../emulator-utils/RangeUtils.ts";
 
@@ -19,58 +19,69 @@ class GasSynchronizerService {
         this.queue.push({ type, payload } as SyncTask);
         console.log(`[GasSynchronizer] - Append to queue ${type}. Summary in queue: ${this.queue.length}`);
 
-        if (!this.isProcessing) {
-            this.processQueue();
-        }
+        this.processQueue();
     }
 
     private async processQueue(): Promise<void> {
+        if (this.isProcessing) return;
         this.isProcessing = true;
 
-        while (this.queue.length > 0) {
-            const task = this.queue.shift();
-            if (!task) continue;
+        try {
+            while (this.queue.length > 0) {
+                const task = this.queue.shift();
+                if (!task) continue;
 
-            switch (task.type) {
-                case "onUpdateRange": {
-                    await this.onUpdateRange(task.payload);
-                    break;
-                }
-                case "onInsertColumns": {
-                    await this.onInsertColumns(task.payload);
-                    break;
-                }
-                case "onMoveColumns": {
-                    await this.onMoveColumns(task.payload);
-                    break;
-                }
-                case "onAppendRow": {
-                    this.onAppendRow(task.payload);
-                    break;
-                }
-                case "onClearContents": {
-                    await this.onClearContents(task.payload);
-                    break
-                }
-                case "onDeleteColumn": {
-
-                    break
-                }
-                case "onDeleteRows": {
-
-                    break
+                switch (task.type) {
+                    case "onUpdateRange": {
+                        await this.onUpdateRange(task.payload);
+                        break;
+                    }
+                    case "onInsertColumns": {
+                        await this.onInsertColumns(task.payload);
+                        break;
+                    }
+                    case "onMoveColumns": {
+                        await this.onMoveColumns(task.payload);
+                        break;
+                    }
+                    case "onAppendRow": {
+                        this.onAppendRow(task.payload);
+                        break;
+                    }
+                    case "onClearContents": {
+                        await this.onClearContents(task.payload);
+                        break
+                    }
+                    case "onDeleteColumns": {
+                        await this.onDeleteColumns(task.payload);
+                        break
+                    }
+                    case "onDeleteRows": {
+                        await this.onDeleteRows(task.payload);
+                        break
+                    }
+                    case "onInsertSheet": {
+                        await this.onInsertSheet(task.payload);
+                        break;
+                    }
                 }
             }
+        } finally {
+            this.isProcessing = false;
         }
+
     }
 
     private async onUpdateRange(payload: GasUpdateRangePayload) {
         const { spreadsheet_id, sheet_id, row, col, cells } = payload;
+        console.log(`[GasSynchronizerService] - Start process event onInsertColumns (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id} row: ${row} col: ${col})`);
 
         const spreadsheetMetadata = await this.getSpreadsheetMetadata(spreadsheet_id);
+        //console.log(`[GasSynchronizerService] - SpreadsheetMetadata:`)
+        //console.log(JSON.stringify(spreadsheetMetadata, null, 2));
         const sheetName = spreadsheetMetadata.sheets?.find(sheet => sheet.properties?.sheetId === sheet_id)?.properties?.title;
 
-        if (!sheetName) throw new Error(`Spreadsheet don't has sheet with sheet_id: ${sheet_id}`);
+        if (!sheetName) throw new Error(`Spreadsheet (spreadsheet_id: ${spreadsheet_id}) don't has sheet with sheet_id: ${sheet_id}`);
 
         const rawValues: any[][] = cells.map(row => row.map(cell => cell.value));
 
@@ -88,6 +99,7 @@ class GasSynchronizerService {
 
     private async onInsertColumns(payload: GasInsertColumnsPayload) {
         const { spreadsheet_id, sheet_id, column_index, num_columns } = payload;
+        console.log(`[GasSynchronizerService] - Start process event onInsertColumns (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id} column_index: ${column_index} num_columns: ${num_columns})`);
 
         await GoogleSheetsService.insertColumns(spreadsheet_id, sheet_id, column_index - 1, column_index + num_columns - 1);
         console.log(`[GasSynchronizerService] - Successufully insert at position ${column_index} ${num_columns} columns in spreadsheet_id: ${spreadsheet_id}.`);
@@ -95,6 +107,8 @@ class GasSynchronizerService {
 
     private async onMoveColumns(payload: GasMoveColumnsPayload) {
         const { spreadsheet_id, sheet_id, columnSpec, destination_index } = payload;
+        console.log(`[GasSynchronizerService] - Start process event onMoveColumns (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id})`);
+
         const startCol = columnSpec.getColumn();
         const numCols = columnSpec.getNumColumns();
 
@@ -115,6 +129,7 @@ class GasSynchronizerService {
 
     private async onAppendRow(payload: GasAppendRowPayload) {
         const { spreadsheet_id, sheet_id, row, cells } = payload;
+        console.log(`[GasSynchronizerService] - Start process event onAppendRow (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id})`);
 
         if (!cells || cells.length === 0) return;
 
@@ -135,6 +150,7 @@ class GasSynchronizerService {
 
     private async onClearContents(payload: GasClearContentsPayload) {
         const { spreadsheet_id, sheet_id } = payload;
+        console.log(`[GasSynchronizerService] - Start process event onClearContents (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id})`);
 
         const spreadsheetMetadata = await this.getSpreadsheetMetadata(spreadsheet_id);
         const sheet = spreadsheetMetadata.sheets?.find(s => s.properties?.sheetId === sheet_id);
@@ -148,6 +164,34 @@ class GasSynchronizerService {
         console.log(`[GasSynchronizerService] - Successufully clear contents in sheet '${sheetName}' in spreadsheet_id: ${spreadsheet_id}`);
     }
 
+    private async onDeleteColumns(payload: GasDeleteColumnPayload) {
+        const { spreadsheet_id, sheet_id, column_position, how_many } = payload;
+        console.log(`[GasSynchronizerService] - Start process event onDeleteColumns (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id} columnPosition: ${column_position} howMany: ${how_many})`);
+        await GoogleSheetsService.deleteColumns(spreadsheet_id, sheet_id, column_position - 1, how_many);
+        console.log(`[GasSynchronizerService] - Successufully delete columns in spreadsheet_id: "${spreadsheet_id}" for sheet_id: "${sheet_id}" Column position: "${column_position}" how many - "${how_many}"`)
+    }
+
+    private async onDeleteRows(payload: GasDeleteRowsPayload) {
+        const { spreadsheet_id, sheet_id, row_position, how_many } = payload;
+        console.log(`[GasSynchronizerService] - Start process event onDeleteRows (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id} rowPosition: ${row_position} howMany: ${how_many})`);
+        await GoogleSheetsService.deleteRows(spreadsheet_id, sheet_id, row_position - 1, how_many);
+        console.log(`[GasSynchronizerService] - Successufully delete rows in spreadsheet_id: "${spreadsheet_id}" for sheet_id: "${sheet_id}" Row position: "${row_position}" how many - "${how_many}"`)
+    }
+
+    private async onInsertSheet(payload: GasInsertSheetPayload) {
+        const { spreadsheet_id, sheet_id, sheet_name, sheet_index, template_sheet_id } = payload;
+        console.log(`[GasSynchronizerService] - Start process event onInsertSheet (spreadsheet_id: ${spreadsheet_id} newSheetName: ${sheet_name} newSheetId: ${sheet_id})`);
+        if (template_sheet_id !== undefined) {
+            await GoogleSheetsService.duplicateSheet(spreadsheet_id, template_sheet_id, sheet_index, sheet_id, sheet_name);
+            console.log(`[GasSynchronizerService] - Successufully duplicate sheet (new SheetName: ${sheet_name} new SheetId: ${sheet_id}) in spreadsheet: "${spreadsheet_id}"`);
+        } else {
+            await GoogleSheetsService.insertSheet(spreadsheet_id, sheet_id, sheet_name, sheet_index);
+            console.log(`[GasSynchronizerService] - Successufully insert new sheet (spreadsheet_id: ${spreadsheet_id} SheetName: ${sheet_name} SheetId: ${sheet_id}) in spreadsheet: "${spreadsheet_id}"`);
+        }
+        // Видаляємо, оскільки таблиця має тепер ще один аркуш, і кеш вже не валідний
+        this.spreadsheetMetadataMap.delete(spreadsheet_id);
+    }
+
     /**
      * Шукає у кеші метадані ел. таблиці, якщо її немає, тоді робить запит, та повертає метадані
      * @param spreadsheetId ідентифікатор ел. таблиці
@@ -156,6 +200,8 @@ class GasSynchronizerService {
     private async getSpreadsheetMetadata(spreadsheetId: string): Promise<sheets_v4.Schema$Spreadsheet> {
         if (this.spreadsheetMetadataMap.has(spreadsheetId)) return this.spreadsheetMetadataMap.get(spreadsheetId)!;
 
+        console.log(`[GasSynchronizerService] - Don't has in map SpreadsheetMetadata for "${spreadsheetId}"`);
+        console.log(`[GasSynchronizerService] - Start pull metadata for spreadsheet: ${spreadsheetId}`);
         const spreadsheetMetadata = await GoogleSheetsService.getSpreadsheet(spreadsheetId);
         this.spreadsheetMetadataMap.set(spreadsheetId, spreadsheetMetadata);
 

@@ -138,6 +138,112 @@ class GoogleSheetsService {
         return response.data;
     }
 
+    public async deleteColumns(
+        spreadsheet_id: string,
+        sheet_id: number,
+        column_index: number,
+        how_many: number = 1
+    ): Promise<sheets_v4.Schema$BatchUpdateSpreadsheetResponse> {
+        const response = await this.sheets.spreadsheets.batchUpdate({
+            spreadsheetId: spreadsheet_id,
+            requestBody: {
+                requests: [
+                    {
+                        deleteDimension: {
+                            range: {
+                                sheetId: sheet_id,
+                                dimension: 'COLUMNS',
+                                startIndex: column_index,
+                                endIndex: column_index + how_many
+                            }
+                        }
+                    }
+                ]
+            }
+        });
+
+        return response.data;
+    }
+
+    public async deleteRows(
+        spreadsheet_id: string,
+        sheet_id: number,
+        row_index: number,
+        how_many: number = 1
+    ): Promise<sheets_v4.Schema$BatchUpdateSpreadsheetResponse> {
+        const response = await this.sheets.spreadsheets.batchUpdate({
+            spreadsheetId: spreadsheet_id,
+            requestBody: {
+                requests: [
+                    {
+                        deleteDimension: {
+                            range: {
+                                sheetId: sheet_id,
+                                dimension: 'ROWS',
+                                startIndex: row_index,
+                                endIndex: row_index + how_many
+                            }
+                        }
+                    }
+                ]
+            }
+        });
+
+        return response.data;
+    }
+
+    public async insertSheet(
+        spreadsheet_id: string,
+        sheetId: number,
+        title: string,
+        index: number
+    ): Promise<sheets_v4.Schema$BatchUpdateSpreadsheetResponse> {
+        const response = await this.sheets.spreadsheets.batchUpdate({
+            spreadsheetId: spreadsheet_id,
+            requestBody: {
+                requests: [
+                    {
+                        addSheet: {
+                            properties: {
+                                sheetId: sheetId,
+                                title: title,
+                                index: index
+                            }
+                        }
+                    }
+                ]
+            }
+        });
+
+        return response.data;
+    }
+
+    public async duplicateSheet(
+        spreadsheetId: string,
+        sourceSheetId: number,
+        insertSheetIndex: number,
+        newSheetId: number,
+        newSheetName: string
+    ) {
+        const response = await this.sheets.spreadsheets.batchUpdate({
+            spreadsheetId: spreadsheetId,
+            requestBody: {
+                requests: [
+                    {
+                        duplicateSheet: {
+                            sourceSheetId: sourceSheetId,
+                            insertSheetIndex: insertSheetIndex,
+                            newSheetId: newSheetId,
+                            newSheetName: newSheetName
+                        }
+                    }
+                ]
+            }
+        });
+
+        return response.data;
+    }
+
     /**
      * Повертає загальну інформацію про таблицю
      * @param spreadsheetId ідентифікатор таблиці

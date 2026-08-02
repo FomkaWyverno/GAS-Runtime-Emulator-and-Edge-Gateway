@@ -51,14 +51,23 @@ export interface GasDeleteRowsPayload {
     how_many: number;
 }
 
+export interface GasInsertSheetPayload {
+    spreadsheet_id: string;
+    sheet_id: number;
+    sheet_name: string;
+    sheet_index: number;
+    template_sheet_id: number | undefined;
+}
+
 export type GasEventsMap = {
     onUpdateRange: [payload: GasUpdateRangePayload];
     onInsertColumns: [payload: GasInsertColumnsPayload];
     onMoveColumns: [payload: GasMoveColumnsPayload];
     onAppendRow: [payload: GasAppendRowPayload];
     onClearContents: [payload: GasClearContentsPayload];
-    onDeleteColumn: [payload: GasDeleteColumnPayload];
+    onDeleteColumns: [payload: GasDeleteColumnPayload];
     onDeleteRows: [payload: GasDeleteRowsPayload];
+    onInsertSheet: [payload: GasInsertSheetPayload];
 }
 
 export type StrictEventEmitter<T extends Record<string, any[]>> = {
