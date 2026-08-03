@@ -241,8 +241,21 @@ export class Range {
             return { value: String(val), value_type: 'NUMBER' }
         }
 
-        if (val instanceof Date) {
-            return { value: val.toISOString(), value_type: 'DATE' }
+        const isDateObj = Object.prototype.toString.call(val) === '[object Date]'
+            || (typeof val === 'object' && typeof (val as any as Date)?.getTime === 'function');
+
+        if (isDateObj) {
+            const dateObj = val as Date;
+            if (!isNaN(dateObj.getTime())) { // Перевірка на валідність, а не Invalid Date
+                return { value: dateObj.toISOString(), value_type: 'DATE' }
+            }
+        }
+
+        if (typeof val === 'string' && (val.includes('GMT') || val.includes('Z') || /^\d{4}-\d{2}-\d{2}/.test(val))) {
+            const parsedDate = new Date(val);
+            if (!isNaN(parsedDate.getTime())) {
+                return { value: parsedDate.toISOString(), value_type: 'DATE' }
+            }
         }
 
         return { value: String(val), value_type: 'STRING' }

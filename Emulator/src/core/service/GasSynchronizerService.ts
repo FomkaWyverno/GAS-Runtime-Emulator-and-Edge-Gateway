@@ -2,6 +2,7 @@ import { sheets_v4 } from "googleapis";
 import { GasAppendRowPayload, GasClearContentsPayload, GasDeleteColumnPayload, GasDeleteRowsPayload, GasEventsMap, GasInsertColumnsPayload, GasInsertSheetPayload as GasInsertSheetPayload, GasMoveColumnsPayload, GasUpdateRangePayload } from "../events/GasEventEmitter.ts";
 import GoogleSheetsService from "./GoogleSheetsService.ts";
 import RangeUtils from "../../emulator-utils/RangeUtils.ts";
+import { Cell } from "../../emulator/@types/sheets/cell.js";
 
 type SyncTask = {
     [K in keyof GasEventsMap]: {
@@ -74,16 +75,35 @@ class GasSynchronizerService {
 
     private async onUpdateRange(payload: GasUpdateRangePayload) {
         const { spreadsheet_id, sheet_id, row, col, cells } = payload;
-        console.log(`[GasSynchronizerService] - Start process event onInsertColumns (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id} row: ${row} col: ${col})`);
+        console.log(`[GasSynchronizerService] - Start process event onUpdateRange (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id} row: ${row} col: ${col})`);
 
-        const spreadsheetMetadata = await this.getSpreadsheetMetadata(spreadsheet_id);
+        const metadata = await this.getSpreadsheetMetadata(spreadsheet_id);
         //console.log(`[GasSynchronizerService] - SpreadsheetMetadata:`)
         //console.log(JSON.stringify(spreadsheetMetadata, null, 2));
-        const sheetName = spreadsheetMetadata.sheets?.find(sheet => sheet.properties?.sheetId === sheet_id)?.properties?.title;
+        const sheet = metadata.sheets?.find(sheet => sheet.properties?.sheetId === sheet_id);
+        const sheetName = sheet?.properties?.title;
+        const gridProprties = sheet?.properties?.gridProperties;
+        const currentMaxRows = gridProprties?.rowCount; // Скільки у реальній гугл таблиці скільки максимум рядків.
+        const currentMaxCols = gridProprties?.columnCount;
 
-        if (!sheetName) throw new Error(`Spreadsheet (spreadsheet_id: ${spreadsheet_id}) don't has sheet with sheet_id: ${sheet_id}`);
+        if (!sheetName || !gridProprties
+            || currentMaxRows === null || currentMaxRows === undefined
+            || currentMaxCols === null || currentMaxCols === undefined
+        ) throw new Error(`Spreadsheet (spreadsheet_id: ${spreadsheet_id}) don't has sheet with sheet_id: ${sheet_id}`);
 
-        const rawValues: any[][] = cells.map(row => row.map(cell => cell.value));
+        const rawValues = this.mapCells(cells);
+        const requiredMaxRow = row + rawValues.length - 1;
+
+        if (requiredMaxRow > currentMaxRows) { // Якщо потрібно, щоб у таблиці було більше ніж поточна кількість рядків, тоді збільшуємо
+            const rowsToAdd = requiredMaxRow - currentMaxRows;
+
+            console.log(`[GasSynchronizerService] - Range exceeds grid limit (${requiredMaxRow} > ${currentMaxRows}). Appending +${rowsToAdd} rows...`);
+
+            await GoogleSheetsService.insertRowsAtIndex(spreadsheet_id, sheet_id, currentMaxRows, requiredMaxRow);
+            this.spreadsheetMetadataMap.delete(spreadsheet_id); // Інвалідуємо кеш після розширення таблиці, оскільки властивості змінились
+        }
+
+        console.log(`[GasSynchronizerService] - Spreadsheet (${spreadsheet_id}) sheet: "${sheetName}" rows: ${currentMaxRows} cols: ${currentMaxCols}`);
 
         const range = RangeUtils.toA1Notation({
             sheetName: sheetName,
@@ -94,7 +114,7 @@ class GasSynchronizerService {
         });
 
         await GoogleSheetsService.updateValues(spreadsheet_id, range, rawValues);
-        console.log(`[GasSynchronizerService] - Successufully update range: ${range} for spreadsheet: ${spreadsheetMetadata.properties?.title}`);
+        console.log(`[GasSynchronizerService] - Successufully update range: ${range} for spreadsheet: ${metadata.properties?.title}`);
     }
 
     private async onInsertColumns(payload: GasInsertColumnsPayload) {
@@ -140,7 +160,7 @@ class GasSynchronizerService {
 
         const sheetName = sheet.properties.title;
 
-        const rawValues = cells.map(cell => cell.value);
+        const rawValues = this.mapCells([cells]);
         const range = `'${sheetName}'`;
 
         await GoogleSheetsService.appendRow(spreadsheet_id, range, [rawValues]);
@@ -206,6 +226,47 @@ class GasSynchronizerService {
         this.spreadsheetMetadataMap.set(spreadsheetId, spreadsheetMetadata);
 
         return spreadsheetMetadata;
+    }
+
+    /**
+     * Мапить матрицю комірок у матрицю рядків для АПІ Гугл Таблиць
+     * @param cells матриця комірок
+     * @returns матрицю рядків
+     */
+    private mapCells(cells: Cell[][]): any[][] {
+        return cells.map(row => row.map(cell => {
+            const val = cell.value;
+
+            if (cell.value_type === 'DATE' || val as any instanceof Date || (typeof val === 'string' && this.isIsoDateString(val))) {
+                const dateObj = new Date(val);
+                if (!isNaN(dateObj.getTime())) {
+                    return this.formatDateForSheets(dateObj);
+                }
+            }
+
+            return val;
+        }));
+    }
+
+    /**
+     * Перетворює Date у рядок, який Google Sheets з `USER_ENTERED` розпізнає як дату
+     * Формат: "DD.MM.YYYY HH:mm:ss"
+     */
+    private formatDateForSheets(date: Date): string {
+        const pad = (n: number) => n.toString().padStart(2, '0');
+
+        const day = pad(date.getDate());
+        const month = pad(date.getMonth() + 1);
+        const year = date.getFullYear();
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+        const seconds = pad(date.getSeconds());
+
+        return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+    }
+
+    private isIsoDateString(val: string): boolean {
+        return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(val);
     }
 }
 

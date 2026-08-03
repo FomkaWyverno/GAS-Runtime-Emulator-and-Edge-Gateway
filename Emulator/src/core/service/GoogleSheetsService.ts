@@ -43,6 +43,8 @@ class GoogleSheetsService {
 
     async updateValues(spreadsheetId: string, range: string, values: any[][]): Promise<sheets_v4.Schema$UpdateValuesResponse> {
         try {
+            // console.log(`[GoogleSheetsService] - Update Value spreadsheet_id: "${spreadsheetId}" range: "${range}" values:`);
+            // console.log(`[GoogleSheetsService] - ${JSON.stringify(values, null, 2)}`);
             const response = await this.sheets.spreadsheets.values.update({
                 spreadsheetId,
                 range,
@@ -76,6 +78,32 @@ class GoogleSheetsService {
                 ]
             }
         });
+    }
+
+    public async insertRowsAtIndex(
+        spreadsheet_id: string,
+        sheet_id: number,
+        start_index: number,
+        end_index: number
+    ): Promise<void> {
+        await this.sheets.spreadsheets.batchUpdate({
+            spreadsheetId: spreadsheet_id,
+            requestBody: {
+                requests: [
+                    {
+                        insertDimension: {
+                            range: {
+                                sheetId: sheet_id,
+                                dimension: "ROWS",
+                                startIndex: start_index,
+                                endIndex: end_index
+                            },
+                            inheritFromBefore: true
+                        },
+                    }
+                ]
+            }
+        })
     }
 
     public async moveColumns(
