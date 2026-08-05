@@ -3,6 +3,8 @@ import { Sheet } from "./Sheet.js";
 import { CellEntity, CellValueType } from "../@types/sheets/cell.entity.js";
 import GasEventEmitter from "../../core/events/GasEventEmitter.ts";
 import { Cell } from "../@types/sheets/cell.js";
+import CellUtil from "../../core/utils/CellUtil.ts";
+import DateUtil from "../../core/utils/DateUtil.ts";
 
 export class Range {
     constructor(
@@ -201,6 +203,12 @@ export class Range {
         return this;
     }
 
+    /**
+     * Парсить сире значення з типом комірки та повертає певний тип даних
+     * @param rawValue сире значення
+     * @param valueType тип значення який має бути тут
+     * @returns запарсене значення
+     */
     private parseCellValue(rawValue: string | null | undefined, valueType: CellValueType): number | boolean | Date | string {
         if (rawValue === null || rawValue === undefined || rawValue === '') return '';
 
@@ -220,44 +228,31 @@ export class Range {
             } 
 
             case "DATE": {
-                const date = new Date(rawValue);
-                return isNaN(date.getTime()) ? '' : date;
+                const date = DateUtil.parseDate(rawValue);
+                return date === null ? '' : date;
             }
 
             default: return '';
         }
     }
 
+    /**
+     * Визначає значення та тип значення та повертає у обертці у вигляді комірки
+     * @param val значення
+     * @returns об'єкт комірки зі значенням та типом
+     */
     private determinateValueAndType(val: number | boolean | Date | string): Cell {
-        if (val === null || val === undefined || val === '') {
-            return { value: '', value_type: 'STRING' }
+        if (val === undefined || val === null) return { value: '', value_type: 'STRING' }
+
+        const type: CellValueType = CellUtil.getCellType(val);
+        switch (type) {
+            case "STRING": return { value: String(val), value_type: 'STRING' };
+            case "NUMBER": return { value: String(val), value_type: 'NUMBER' };
+            case "BOOLEAN": return { value: String(val), value_type: 'BOOLEAN' };
+            // Стверджуємо що DateUtil.parseDate поверне Date оскільки в CellUtil.getCellType
+            // Перевіряє значення, і під капотом теж викликає DateUtil.parseDate і якщо повернув тип DATE, означає що дата успішно запарсилась
+            // Тож у нижче теж запарситься гарантовано.
+            case "DATE":  return { value: DateUtil.parseDate(val)!.toISOString(), value_type: 'DATE' } 
         }
-
-        if (typeof val === 'boolean') {
-            return { value: val ? 'TRUE' : 'FALSE', value_type: 'BOOLEAN' }
-        }
-
-        if (typeof val === 'number') {
-            return { value: String(val), value_type: 'NUMBER' }
-        }
-
-        const isDateObj = Object.prototype.toString.call(val) === '[object Date]'
-            || (typeof val === 'object' && typeof (val as any as Date)?.getTime === 'function');
-
-        if (isDateObj) {
-            const dateObj = val as Date;
-            if (!isNaN(dateObj.getTime())) { // Перевірка на валідність, а не Invalid Date
-                return { value: dateObj.toISOString(), value_type: 'DATE' }
-            }
-        }
-
-        if (typeof val === 'string' && (val.includes('GMT') || val.includes('Z') || /^\d{4}-\d{2}-\d{2}/.test(val))) {
-            const parsedDate = new Date(val);
-            if (!isNaN(parsedDate.getTime())) {
-                return { value: parsedDate.toISOString(), value_type: 'DATE' }
-            }
-        }
-
-        return { value: String(val), value_type: 'STRING' }
     }
 }

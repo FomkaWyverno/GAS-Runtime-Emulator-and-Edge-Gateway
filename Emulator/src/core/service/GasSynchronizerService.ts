@@ -237,6 +237,8 @@ class GasSynchronizerService {
         return cells.map(row => row.map(cell => {
             const val = cell.value;
 
+            if (val === undefined || val === null) return '';
+
             if (cell.value_type === 'DATE' || val as any instanceof Date || (typeof val === 'string' && this.isIsoDateString(val))) {
                 const dateObj = new Date(val);
                 if (!isNaN(dateObj.getTime())) {

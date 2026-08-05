@@ -5,6 +5,7 @@ import { BootStrap } from "./Bootstrap.js";
 import { asyncPool } from "../helpers/asyncPool.js";
 import Database from "../database/Database.js";
 import { CellValueType } from "../../emulator/@types/sheets/cell.entity.js";
+import CellUtil from "../utils/CellUtil.ts";
 
 interface SheetValues {
     spreadsheetId: string;
@@ -116,7 +117,7 @@ class SheetsDataBootstrap implements BootStrap {
                             value: cell,
                             row: rowIndex + 1,
                             col: colIndex + 1,
-                            value_type: this.getCellType(cell)
+                            value_type: CellUtil.getCellType(cell)
                         });
                     }
                     return acc;
@@ -140,18 +141,6 @@ class SheetsDataBootstrap implements BootStrap {
                 Database.query(sql, flatValues)
             }
         });
-
-
-    }
-
-    private getCellType(value: any): CellValueType {
-        if (typeof value === 'boolean') return 'BOOLEAN';
-        if (typeof value === 'number') return 'NUMBER';
-
-        const isDate = !isNaN(Date.parse(value)) && isNaN(Number(value));
-        if (isDate) return 'DATE';
-
-        return 'STRING';
     }
 }
 

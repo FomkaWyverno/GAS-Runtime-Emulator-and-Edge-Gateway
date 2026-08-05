@@ -311,18 +311,18 @@ export class Sheet {
                 DELETE FROM cells
                 WHERE spreadsheet_id = ?
                     AND sheet_id = ?
-                    AND row >= ?
-                    AND row < ?; 
+                    AND \`row\` >= ?
+                    AND \`row\` < ?; 
             `;
 
             Database.query(deleteSQL, [this.getParent().getId(), this.getSheetId(), rowPosition, rowPosition + howMany], transactionId);
 
             const updateSQL = `
                 UPDATE cells
-                SET row = row - ?
+                SET \`row\` = \`row\` - ?
                 WHERE spreadsheet_id = ?
                     AND sheet_id = ?
-                    AND row >= ?;
+                    AND \`row\` >= ?;
             `;
 
             Database.query(updateSQL, [howMany, this.getParent().getId(), this.getSheetId(), rowPosition + howMany], transactionId);

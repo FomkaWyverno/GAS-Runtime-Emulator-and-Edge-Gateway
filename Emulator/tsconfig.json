@@ -1,25 +1,26 @@
 {
-"compilerOptions": {
+  "compilerOptions": {
     "target": "ES2020",
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "types": ["jest", "node"],
+    "types": [
+      "jest",
+      "node"
+    ],
     "esModuleInterop": true,
     "strict": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "skipLibCheck": true,
     "isolatedModules": true,
-
     "noEmit": true,
     "allowImportingTsExtensions": true,
   },
-
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "tests/**/*"
   ],
   "exclude": [
-    "node_modules",
-    "tests"
+    "node_modules"
   ]
 }
