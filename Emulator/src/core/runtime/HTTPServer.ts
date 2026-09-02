@@ -1,8 +1,8 @@
 import http from 'http'
-import DoPostMapper from './mappers/DoPostMapper.ts';
-import SandboxGAS from './SandboxGAS.ts';
-import { TextOutput } from '../../emulator/utils/ContentService.ts';
-import AppConfig from '../config/AppConfig.ts';
+import DoPostMapper from './mappers/DoPostMapper.js';
+import SandboxGAS from './SandboxGAS.js';
+import { TextOutput } from '../../emulator/utils/ContentService.js';
+import AppConfig from '../config/AppConfig.js';
 import { resolve } from 'dns';
 
 class HTTPServer {

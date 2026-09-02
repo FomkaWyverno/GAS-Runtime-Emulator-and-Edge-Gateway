@@ -3,7 +3,7 @@
 // Runtime types generated with workerd@1.20260630.1 2026-07-02 nodejs_compat
 interface __BaseEnv_Env {
 	KV_STORE: KVNamespace;
-	"telegram-bot-host-ping-expiration-ttl": "300";
+	"telegram_bot_host_ping_expiration_ttl": "300";
 }
 declare namespace Cloudflare {
 	interface GlobalProps {

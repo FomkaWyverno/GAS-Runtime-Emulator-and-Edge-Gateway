@@ -27,15 +27,19 @@ export class UrlFetchApp {
         let body: any = params.payload || null;
 
         // 2 Process payload
-        if (body && typeof body === 'object' && !(body instanceof Buffer)) {
-            if (body instanceof Blob) {
-                body = Buffer.from(body.getBytes());
-            } else if (requestHeaders['content-type'].includes('application/x-www-form-urlencoded')) {
-                const searchParams = new URLSearchParams();
-                for (const key in body) {
-                    searchParams.append(key, body[key]);
+        if (body) {
+            if (Array.isArray(body) || ArrayBuffer.isView(body)) {
+                body = Buffer.from(body as any);
+            } else if (typeof body === 'object' && !(body instanceof Buffer)) {
+                if (body instanceof Blob) {
+                    body = Buffer.from(body.getBytes());
+                } else if (requestHeaders['content-type']?.includes('application/x-www-form-urlencoded')) {
+                    const searchParams = new URLSearchParams();
+                    for (const key in body) {
+                        searchParams.append(key, body[key]);
+                    }
+                    body = searchParams.toString();
                 }
-                body = searchParams.toString();
             }
         }
 

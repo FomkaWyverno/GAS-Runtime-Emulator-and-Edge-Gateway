@@ -3,7 +3,7 @@ import RangeUtils from "../../emulator-utils/RangeUtils.js";
 import { Range } from "./Range.js";
 import { Spreadsheet } from "./Spreadsheet.js";
 import { CellEntity, CellValueType } from "../@types/sheets/cell.entity.js";
-import GasEventEmitter from "../../core/events/GasEventEmitter.ts";
+import GasEventEmitter from "../../core/events/GasEventEmitter.js";
 
 export class Sheet {
     constructor(

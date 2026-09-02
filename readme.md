@@ -94,6 +94,11 @@
       <td style="padding: 10px; border: 1px solid #ddd;">Підтримує лише основні токени. Не підтримує екранування лапками.</td>
     </tr>
     <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;"><code>parseDate</code></td>
+      <td style="padding: 10px; border: 1px solid #ddd; background-color: #fff9c4; color: #856404; font-weight: bold; text-align: center;">Частково</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">Підтримує основні токени розбору через регулярні вирази. Не підтримує екранування символів одинарними лапками.</td>
+    </tr>
+    <tr>
       <td style="padding: 10px; border: 1px solid #ddd;"><code>newBlob</code></td>
       <td style="padding: 10px; border: 1px solid #ddd; background-color: #c8e6c9; color: #256029; font-weight: bold; text-align: center;">Повністю</td>
       <td style="padding: 10px; border: 1px solid #ddd;">Реалізовано всі перевантаження для рядків та масивів байтів.</td>

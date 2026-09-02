@@ -1,23 +1,25 @@
 {
-  "name": "gas-runtime-emulator",
+  "name": "gas-runtime-emulator-and-edge-gateaway",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
   "author": "WyvernoTeam",
   "type": "module",
   "scripts": {
-    "build": "tsc && npx cpx \"src/sql/**/*.sql\" dist/sql",
+    "build": "tsup && npx cpx \"src/sql/**/*.sql\" dist/bin/sql && npx cpx \"dotenv/config.example.json\" dist/dotenv && npx cpx \".env\" dist && npx cpx \"package.json\" dist && node fix-imports.ts",
+    "start": "node --env-file=dist/.env dist/bin/main.js",
     "dev": "tsx --env-file=.env src/main.ts",
-    "start": "node --env-file=.env dist/main.js",
     "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js",
     "test:watch": "npm test -- --watch"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.6.2",
+    "@types/node": "^25.9.5",
     "@types/ws": "^8.18.1",
     "jest": "^30.4.2",
     "ts-jest": "^29.4.9",
+    "tsc-alias": "^1.9.1",
+    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   },
@@ -25,7 +27,6 @@
     "googleapis": "^173.0.0",
     "mysql2": "^3.22.3",
     "sync-fetch": "^0.6.0",
-    "synckit": "^0.11.12",
-    "ws": "^8.21.0"
+    "synckit": "^0.11.12"
   }
 }

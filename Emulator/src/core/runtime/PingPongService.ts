@@ -1,4 +1,4 @@
-import AppConfig from "../config/AppConfig.ts";
+import AppConfig from "../config/AppConfig.js";
 import os from 'os'
 
 class PingPongService {

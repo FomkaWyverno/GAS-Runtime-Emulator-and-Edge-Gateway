@@ -1,5 +1,5 @@
 import Database from "../../core/database/Database.js";
-import GasEventEmitter from "../../core/events/GasEventEmitter.ts";
+import GasEventEmitter from "../../core/events/GasEventEmitter.js";
 import { Sheet } from "./Sheet.js";
 import crypto from 'crypto'
 

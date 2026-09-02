@@ -1,4 +1,4 @@
-import CellUtil from "../src/core/utils/CellUtil.ts";
+import CellUtil from "../src/core/utils/CellUtil.js";
 
 
 describe("CellUtil.getCellType", () => {

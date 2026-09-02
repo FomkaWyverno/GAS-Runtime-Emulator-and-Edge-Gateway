@@ -1,6 +1,6 @@
 import EventEmitter from "events";
 import { Cell } from "../../emulator/@types/sheets/cell.js";
-import { Range } from "../../emulator/sheets/Range.ts";
+import { Range } from "../../emulator/sheets/Range.js";
 
 export interface GasUpdateRangePayload {
     spreadsheet_id: string;

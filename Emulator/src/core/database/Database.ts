@@ -1,12 +1,11 @@
-import path from "path";
 import { createSyncFn } from "synckit";
 import { fileURLToPath } from "url";
 import type { DatabaseParams, DatabaseWorkerResult } from "./DatabaseWorker.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const isTs = import.meta.url.endsWith('.ts');
 
-const workerPath = path.resolve(__dirname, 'DatabaseWorker.js');
+const workerExts = isTs ? 'ts' : 'js';
+const workerPath = fileURLToPath(new URL(`./DatabaseWorker.${workerExts}`, import.meta.url));
 
 const runSyncDBFn = createSyncFn<(params: DatabaseParams) => DatabaseWorkerResult>(workerPath, {
     tsRunner: 'tsx'
@@ -22,7 +21,10 @@ class Database {
         };
         const result = runSyncDBFn(request);
 
-        if (result.type === 'ERROR') throw new Error(`Database Query Error: ${result.error}`);
+        if (result.type === 'ERROR') throw new Error(`Database Query Error
+            SQL: ${sql}
+            Params: ${JSON.stringify(params, null, 2)}
+            Stacktrace: ${result.error}`);
 
         if (result.type === 'QUERY') {
             return result.data?.rows as T[];

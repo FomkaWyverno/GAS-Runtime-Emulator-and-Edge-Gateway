@@ -1,4 +1,4 @@
-import { Cache } from "./Cache.ts";
+import { Cache } from "./Cache.js";
 
 export class CacheService {
     private static scriptCache: Cache | null = null;

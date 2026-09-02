@@ -5,7 +5,7 @@ import { BootStrap } from "./Bootstrap.js";
 import { asyncPool } from "../helpers/asyncPool.js";
 import Database from "../database/Database.js";
 import { CellValueType } from "../../emulator/@types/sheets/cell.entity.js";
-import CellUtil from "../utils/CellUtil.ts";
+import CellUtil from "../utils/CellUtil.js";
 
 interface SheetValues {
     spreadsheetId: string;
@@ -105,7 +105,7 @@ class SheetsDataBootstrap implements BootStrap {
         Database.query(sql, flatValues);
     }
 
-    private bulkInsertSheetsValuesToDatabase(sheetsValues: SheetValues[], chunk_size: number = 1000) {
+    private bulkInsertSheetsValuesToDatabase(sheetsValues: SheetValues[], chunk_size: number = 100) {
         if (sheetsValues.length === 0) return;
 
         sheetsValues.forEach(sheetValues => {

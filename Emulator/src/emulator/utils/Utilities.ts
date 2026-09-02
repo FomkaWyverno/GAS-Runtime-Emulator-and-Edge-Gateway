@@ -160,6 +160,122 @@ export class Utilities {
     }
 
     /**
+     * Парсить рядок дати за специфікацією Java SE SimpleDateFormat.
+     * @param dateString - рядок, який треба розпарсити (наприклад, "2026-06-06 14:30:00")
+     * @param timeZone - таймзона (наприклад, "Europe/Kyiv")
+     * @param format - паттерн формату (наприклад, "yyyy-MM-dd HH:mm:ss")
+     * @returns Date | null
+     */
+    public static parseDate(dateString: string, timeZone: string, format: string): Date | null {
+        if (!dateString || !format) return null;
+
+        const tokenMap: Record<string, string> = {
+            'yyyy': '(?<year>\\d{4})',
+            'yy': '(?<year>\\d{2})',
+            'MMMM': '(?<monthName>[a-zA-Zа-яА-Я]+)',
+            'MMM': '(?<monthName>[a-zA-Zа-яА-Я]+)',
+            'MM': '(?<month>\\d{2})',
+            'M': '(?<month>\\d{1,2})',
+            'dd': '(?<day>\\d{2})',
+            'd': '(?<day>\\d{1,2})',
+            'HH': '(?<hour>\\d{2})',
+            'H': '(?<hour>\\d{1,2})',
+            'hh': '(?<hour12>\\d{2})',
+            'h': '(?<hour12>\\d{1,2})',
+            'mm': '(?<minute>\\d{2})',
+            'ss': '(?<second>\\d{2})',
+            'a': '(?<ampm>AM|PM|am|pm)'
+        };
+
+        const tokens = Object.keys(tokenMap).sort((a, b) => b.length - a.length);
+        
+        let regexPattern = format;
+        tokens.forEach(token => {
+            const escapedToken = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            regexPattern = regexPattern.replace(new RegExp(escapedToken, 'g'), tokenMap[token]);
+        });
+
+        const regex = new RegExp(`^${regexPattern}$`);
+        const match = dateString.match(regex);
+
+        if (!match || !match.groups) return null;
+
+        const groups = match.groups;
+
+        let year = groups['year'] ? parseInt(groups['year'], 10) : new Date().getFullYear();
+        if (year < 100) {
+            year += year >= 70 ? 1900 : 2000;
+        }
+
+        let month = 0;
+        if (groups['month']) {
+            month = parseInt(groups['month'], 10) - 1;
+        } else if (groups['monthName']) {
+            const monthsEn = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+            const monthsShortEn = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+            
+            const lowerName = groups['monthName'].toLowerCase();
+            let foundIdx = monthsEn.findIndex(m => m.startsWith(lowerName));
+            if (foundIdx === -1) {
+                foundIdx = monthsShortEn.findIndex(m => m.startsWith(lowerName));
+            }
+            if (foundIdx !== -1) month = foundIdx;
+        }
+
+        const day = groups['day'] ? parseInt(groups['day'], 10) : 1;
+        
+        let hour = 0;
+        if (groups['hour']) {
+            hour = parseInt(groups['hour'], 10);
+        } else if (groups['hour12']) {
+            hour = parseInt(groups['hour12'], 10);
+            const ampm = groups['ampm'] ? groups['ampm'].toUpperCase() : '';
+            if (ampm === 'PM' && hour < 12) hour += 12;
+            if (ampm === 'AM' && hour === 12) hour = 0;
+        }
+
+        const minute = groups['minute'] ? parseInt(groups['minute'], 10) : 0;
+        const second = groups['second'] ? parseInt(groups['second'], 10) : 0;
+
+        const isoString = `${String(year).padStart(4, '0')}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}.000Z`;
+        const utcDate = new Date(isoString);
+        
+        if (isNaN(utcDate.getTime())) return null;
+        if (!timeZone) return utcDate;
+
+        try {
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone,
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: 'numeric', minute: 'numeric', second: 'numeric',
+                hour12: false
+            });
+
+            const parts = formatter.formatToParts(utcDate);
+            const partValues: Record<string, string> = parts.reduce((acc, p) => {
+                acc[p.type] = p.value;
+                return acc;
+            }, {} as Record<string, string>);
+            
+            const tzYear = parseInt(partValues['year'] || '0', 10);
+            const tzMonth = parseInt(partValues['month'] || '1', 10) - 1;
+            const tzDay = parseInt(partValues['day'] || '1', 10);
+            const tzHour = parseInt(partValues['hour'] || '0', 10);
+            const tzMinute = parseInt(partValues['minute'] || '0', 10);
+            const tzSecond = parseInt(partValues['second'] || '0', 10);
+
+            const tzDateAsUtc = Date.UTC(tzYear, tzMonth, tzDay, tzHour, tzMinute, tzSecond);
+            const targetAsUtc = Date.UTC(year, month, day, hour, minute, second);
+            
+            const diffMs = targetAsUtc - tzDateAsUtc;
+
+            return new Date(utcDate.getTime() + diffMs);
+        } catch (e) {
+            return utcDate;
+        }
+    }
+
+    /**
      * Create a new Blob object from a string, content type, and name.
      * Blobs are used in many Apps Script APIs that take binary data as input.
      * @param data The string for the blob, assumed UTF-8.

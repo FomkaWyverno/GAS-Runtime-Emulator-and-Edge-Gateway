@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "indev-cyberlife-audio-task-telegram-bot",
+	"name": "telegram-bot-audio-task-manager-webhook-cloudflare",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-07-02",
 	"observability": {
@@ -21,7 +21,7 @@
 		}
 	],
 	"vars": {
-		"telegram-bot-host-ping-expiration-ttl": "300",
+		"telegram_bot_host_ping_expiration_ttl": "300",
 	}
 	/**
 	 * Smart Placement

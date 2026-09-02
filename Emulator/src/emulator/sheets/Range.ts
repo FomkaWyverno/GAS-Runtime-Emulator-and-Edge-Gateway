@@ -1,10 +1,10 @@
 import Database from "../../core/database/Database.js";
 import { Sheet } from "./Sheet.js";
 import { CellEntity, CellValueType } from "../@types/sheets/cell.entity.js";
-import GasEventEmitter from "../../core/events/GasEventEmitter.ts";
+import GasEventEmitter from "../../core/events/GasEventEmitter.js";
 import { Cell } from "../@types/sheets/cell.js";
-import CellUtil from "../../core/utils/CellUtil.ts";
-import DateUtil from "../../core/utils/DateUtil.ts";
+import CellUtil from "../../core/utils/CellUtil.js";
+import DateUtil from "../../core/utils/DateUtil.js";
 
 export class Range {
     constructor(

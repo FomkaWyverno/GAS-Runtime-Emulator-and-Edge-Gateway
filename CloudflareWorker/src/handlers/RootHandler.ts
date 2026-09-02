@@ -18,7 +18,7 @@ class RootHandler implements Handler {
         }
 
 
-        const webhook_secret = env['telegram-bot-secret']
+        const webhook_secret = env['telegram_bot_secret']
         const tg_api_webhook_secret = headers['x-telegram-bot-api-secret-token']
 
         if (webhook_secret !== tg_api_webhook_secret) {
@@ -46,7 +46,7 @@ class RootHandler implements Handler {
                 }
 
                 if (url === urlConfig.host_url) {
-                    requestHeaders['X-Auth-Token'] = env['host-request-token']
+                    requestHeaders['X-Auth-Token'] = env['host_request_token']
                 }
 
                 response = await fetchWithTimeout(url, {
@@ -57,7 +57,7 @@ class RootHandler implements Handler {
 
                 const GATEWAY_ERRORS = [502, 503, 504, 530];
 
-                if (GATEWAY_ERRORS.includes(response.status) && url !== env['telegram-bot-gas-url']) {
+                if (GATEWAY_ERRORS.includes(response.status) && url !== env['telegram_bot_gas_url']) {
                     console.error(`[Gateway] - Server is OFFLINE or Tunnel dead. Status: ${response.status}. Switch to GAS url...`);
                     continue;
                 }
@@ -90,13 +90,13 @@ class RootHandler implements Handler {
     private async determineURLs(env: Env): Promise<DetermineURLs> {
         const hostRaw = await env.KV_STORE.get(KVNamespaceKeys.HOST_PC);
         const host = hostRaw ? JSON.parse(hostRaw) as HostData : null;
-        const expirationTTL = Number(env['telegram-bot-host-ping-expiration-ttl'])
+        const expirationTTL = Number(env['telegram_bot_host_ping_expiration_ttl'])
 
         const determineURLs: DetermineURLs = {
             apps_script_host_url: ""
         };
         if (host && host.last_seen < Date.now() - expirationTTL) determineURLs.host_url = host.host_url;
-        determineURLs.apps_script_host_url = env['telegram-bot-gas-url'];
+        determineURLs.apps_script_host_url = env['telegram_bot_gas_url'];
 
         return determineURLs;
     }

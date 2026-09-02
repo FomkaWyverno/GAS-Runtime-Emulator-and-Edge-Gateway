@@ -11,7 +11,7 @@ class HostPingHandler implements Handler {
     async handle(request: Request, env: Env): Promise<Response> {
         try {
             const authHeader = request.headers.get('Authorization');
-            const expectedToken = `Bearer ${env["host-ping-token"]}`
+            const expectedToken = `Bearer ${env["host_ping_token"]}`
 
             if (!authHeader || authHeader !== expectedToken) {
                 console.warn(`[Ping Security] Unauthorized ping attempt`)
@@ -35,7 +35,7 @@ class HostPingHandler implements Handler {
                 last_seen: Date.now()
             } satisfies HostData;
 
-            await env.KV_STORE.put(KVNamespaceKeys.HOST_PC, JSON.stringify(hostData), { expirationTtl: Number(env["telegram-bot-host-ping-expiration-ttl"]) });
+            await env.KV_STORE.put(KVNamespaceKeys.HOST_PC, JSON.stringify(hostData), { expirationTtl: Number(env["telegram_bot_host_ping_expiration_ttl"]) });
 
             console.log(`[KV Store] - Successfully updated data for Host ${body.host_id}`)
 

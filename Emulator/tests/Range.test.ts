@@ -1,5 +1,5 @@
-import Database from "../src/core/database/Database.ts";
-import { Range } from "../src/emulator/sheets/Range.ts";
+import Database from "../src/core/database/Database.js";
+import { Range } from "../src/emulator/sheets/Range.js";
 import { jest } from "@jest/globals"
 
 describe('Range.ts - Cell Data Extraction & Date Handling Tests', () => {

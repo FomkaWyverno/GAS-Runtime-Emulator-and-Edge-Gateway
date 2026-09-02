@@ -1,8 +1,8 @@
-import SandboxGAS from "../runtime/SandboxGAS.ts";
+import SandboxGAS from "../runtime/SandboxGAS.js";
 import { BootStrap } from "./Bootstrap.js";
 import PropertiesDataBootstrap from "./PropertiesDataBootstrap.js";
 import SheetsDataBootstrap from "./SheetsDataBootstrap.js";
-import SynchronizerBootstrap from "./SynchronizerBootstrap.ts";
+import SynchronizerBootstrap from "./SynchronizerBootstrap.js";
 
 
 class AppBootstrap implements BootStrap {

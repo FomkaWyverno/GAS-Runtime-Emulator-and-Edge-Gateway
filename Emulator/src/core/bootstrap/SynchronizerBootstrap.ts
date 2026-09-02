@@ -1,5 +1,5 @@
-import GasEventEmitter from "../events/GasEventEmitter.ts";
-import GasSynchronizerService from "../service/GasSynchronizerService.ts";
+import GasEventEmitter from "../events/GasEventEmitter.js";
+import GasSynchronizerService from "../service/GasSynchronizerService.js";
 import { BootStrap } from "./Bootstrap.js";
 
 

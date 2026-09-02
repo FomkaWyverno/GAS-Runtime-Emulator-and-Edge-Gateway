@@ -1,7 +1,7 @@
 import { sheets_v4 } from "googleapis";
-import { GasAppendRowPayload, GasClearContentsPayload, GasDeleteColumnPayload, GasDeleteRowsPayload, GasEventsMap, GasInsertColumnsPayload, GasInsertSheetPayload as GasInsertSheetPayload, GasMoveColumnsPayload, GasUpdateRangePayload } from "../events/GasEventEmitter.ts";
-import GoogleSheetsService from "./GoogleSheetsService.ts";
-import RangeUtils from "../../emulator-utils/RangeUtils.ts";
+import { GasAppendRowPayload, GasClearContentsPayload, GasDeleteColumnPayload, GasDeleteRowsPayload, GasEventsMap, GasInsertColumnsPayload, GasInsertSheetPayload as GasInsertSheetPayload, GasMoveColumnsPayload, GasUpdateRangePayload } from "../events/GasEventEmitter.js";
+import GoogleSheetsService from "./GoogleSheetsService.js";
+import RangeUtils from "../../emulator-utils/RangeUtils.js";
 import { Cell } from "../../emulator/@types/sheets/cell.js";
 
 type SyncTask = {

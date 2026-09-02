@@ -16,7 +16,8 @@ export class Lock {
      * @param timeoutInMillis 
      */
     public waitLock(timeoutInMillis: number) {
-        if (Atomics.load(this.lockArray, 1) === threadId) return; // Якщо воркер наш володіє локом, йдемо далі
+        // Перевіряємо, що лок захоплений (ідекс 0 === 1) і саме нашим потоком володіє локом (індекс 1 === threadId), йдемо далі
+        if (Atomics.load(this.lockArray, 0) === 1 && Atomics.load(this.lockArray, 1) === threadId) return;
 
         const startTime = Date.now();
 
@@ -47,7 +48,11 @@ export class Lock {
      * prior to releasing the lock, to commit all pending changes to the spreadsheet while you still have exclusive access to it.
      */
     public releaseLock() {
-        if (Atomics.load(this.lockArray, 1) !== threadId) return;
+        const isLocked = Atomics.load(this.lockArray, 0) === 1;
+        const isOurThread = Atomics.load(this.lockArray, 1) === threadId;
+
+        // Якщо лок НЕ захоплений АБО належить НЕ нашому потоку — виходимо
+        if (!isLocked || !isOurThread) return;
 
         Atomics.store(this.lockArray, 1, 0);
         const oldValue = Atomics.exchange(this.lockArray, 0, 0);
@@ -55,6 +60,7 @@ export class Lock {
     }
 
     public hasLock(): boolean {
-        return Atomics.load(this.lockArray, 1) === threadId;
+        // Перевіряємо ОДНОЧАСНО і стан локу (1), і власника (threadId)
+        return Atomics.load(this.lockArray, 0) === 1 && Atomics.load(this.lockArray, 1) === threadId;
     }
 }

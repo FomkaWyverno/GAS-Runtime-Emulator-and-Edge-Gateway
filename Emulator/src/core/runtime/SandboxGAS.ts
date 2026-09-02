@@ -1,26 +1,27 @@
-import { HTTPResponse } from "../../emulator/network/HTTPResponse.ts";
-import { UrlFetchApp } from "../../emulator/network/UrlFetchApp.ts";
-import Sheets from "../../emulator/sheets/advanced/Sheets.ts";
-import { SpreadsheetsCollection } from "../../emulator/sheets/advanced/SpreadsheetsCollection.ts";
-import { Sheet } from "../../emulator/sheets/Sheet.ts";
-import { Spreadsheet } from "../../emulator/sheets/Spreadsheet.ts";
-import { SpreadsheetApp } from "../../emulator/sheets/SpreadsheetApp.ts";
-import { Browser } from "../../emulator/ui/Browser.ts";
-import { ButtonSet } from "../../emulator/ui/ButtonSet.ts";
-import { Menu } from "../../emulator/ui/Menu.ts";
-import { CacheService } from "../../emulator/utils/CacheService.ts";
-import Console from "../../emulator/utils/Console.ts";
-import { ContentService } from "../../emulator/utils/ContentService.ts";
-import LockService from "../../emulator/utils/LockService.ts";
-import { PropertiesService } from "../../emulator/utils/PropertiesService.ts";
-import { Utilities } from "../../emulator/utils/Utilities.ts";
-import AppConfig from "../config/AppConfig.ts";
-import { Range } from "../../emulator/sheets/Range.ts";
+import { HTTPResponse } from "../../emulator/network/HTTPResponse.js";
+import { UrlFetchApp } from "../../emulator/network/UrlFetchApp.js";
+import Sheets from "../../emulator/sheets/advanced/Sheets.js";
+import { SpreadsheetsCollection } from "../../emulator/sheets/advanced/SpreadsheetsCollection.js";
+import { Sheet } from "../../emulator/sheets/Sheet.js";
+import { Spreadsheet } from "../../emulator/sheets/Spreadsheet.js";
+import { SpreadsheetApp } from "../../emulator/sheets/SpreadsheetApp.js";
+import { Browser } from "../../emulator/ui/Browser.js";
+import { ButtonSet } from "../../emulator/ui/ButtonSet.js";
+import { Menu } from "../../emulator/ui/Menu.js";
+import { CacheService } from "../../emulator/utils/CacheService.js";
+import Console from "../../emulator/utils/Console.js";
+import { ContentService } from "../../emulator/utils/ContentService.js";
+import LockService from "../../emulator/utils/LockService.js";
+import { PropertiesService } from "../../emulator/utils/PropertiesService.js";
+import { Utilities } from "../../emulator/utils/Utilities.js";
+import AppConfig from "../config/AppConfig.js";
+import { Range } from "../../emulator/sheets/Range.js";
 import vm from 'node:vm'
 import fs from 'node:fs'
 import path from "node:path";
-import { Cache } from "../../emulator/utils/Cache.ts";
-import { Lock } from "../../emulator/utils/Lock.ts";
+import { Cache } from "../../emulator/utils/Cache.js";
+import { Lock } from "../../emulator/utils/Lock.js";
+import { Blob } from "../../emulator/utils/Blob.js";
 
 interface GasFile {
     filePath: string;

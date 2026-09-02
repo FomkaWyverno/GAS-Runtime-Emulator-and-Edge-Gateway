@@ -1,5 +1,5 @@
 import { CellValueType } from "../../emulator/@types/sheets/cell.entity.js";
-import DateUtil from "./DateUtil.ts";
+import DateUtil from "./DateUtil.js";
 
 export default {
     /**

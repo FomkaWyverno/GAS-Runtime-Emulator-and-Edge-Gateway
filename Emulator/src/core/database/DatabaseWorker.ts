@@ -1,5 +1,5 @@
 import mysql from "mysql2/promise";
-import type { Pool, PoolConnection, ResultSetHeader} from "mysql2/promise";
+import type { Pool, PoolConnection, PoolOptions, ResultSetHeader} from "mysql2/promise";
 import path, { dirname, resolve } from "path";
 import fs from 'fs'
 import { runAsWorker } from "synckit";
@@ -189,7 +189,7 @@ runAsWorker(async ({ actionType = 'QUERY', sql, params, transactionId }: Databas
             const connection = activeTransactions.get(transactionId)!;
             [rawResult] = await connection?.execute(sql, params);
         } else {
-            [rawResult] = await pool.execute(sql, params);
+            [rawResult] = await pool.query(sql, params);
         }
 
         if (Array.isArray(rawResult)) {

@@ -1,8 +1,8 @@
 import * as readline from 'readline'
 import AppBootstrap from "./core/bootstrap/AppBootstrap.js";
-import CloudflareTunnelService from "./core/runtime/CloudflareTunnelService.ts";
-import HTTPServer from "./core/runtime/HTTPServer.ts";
-import PingPongService from "./core/runtime/PingPongService.ts";
+import CloudflareTunnelService from "./core/runtime/CloudflareTunnelService.js";
+import HTTPServer from "./core/runtime/HTTPServer.js";
+import PingPongService from "./core/runtime/PingPongService.js";
 
 const PORT = 3000;
 

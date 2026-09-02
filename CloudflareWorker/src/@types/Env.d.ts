@@ -1,6 +1,6 @@
 interface Env {
-    "telegram-bot-secret": string;
-    "host-ping-token": string;
-    "host-request-token": string;
-    "telegram-bot-gas-url": string;
+    "telegram_bot_secret": string;
+    "host_ping_token": string;
+    "host_request_token": string;
+    "telegram_bot_gas_url": string;
 }

@@ -9,7 +9,6 @@
     ],
     "esModuleInterop": true,
     "strict": true,
-    "outDir": "./dist",
     "rootDir": ".",
     "skipLibCheck": true,
     "isolatedModules": true,
@@ -18,9 +17,12 @@
   },
   "include": [
     "src/**/*",
-    "tests/**/*"
+    "tests/**/*",
+    "tsup.config.ts",
+    "fix-imports.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist"
   ]
 }
