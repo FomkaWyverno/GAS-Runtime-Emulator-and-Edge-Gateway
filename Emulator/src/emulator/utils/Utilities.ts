@@ -167,38 +167,56 @@ export class Utilities {
      * @returns Date | null
      */
     public static parseDate(dateString: string, timeZone: string, format: string): Date | null {
-        if (!dateString || !format) return null;
+        if (!dateString || !format) throw new Error(`parseDate: dateString or format is empty (dateString="${dateString}", format="${format}")`);
 
-        const tokenMap: Record<string, string> = {
-            'yyyy': '(?<year>\\d{4})',
-            'yy': '(?<year>\\d{2})',
-            'MMMM': '(?<monthName>[a-zA-Zа-яА-Я]+)',
-            'MMM': '(?<monthName>[a-zA-Zа-яА-Я]+)',
-            'MM': '(?<month>\\d{2})',
-            'M': '(?<month>\\d{1,2})',
-            'dd': '(?<day>\\d{2})',
-            'd': '(?<day>\\d{1,2})',
-            'HH': '(?<hour>\\d{2})',
-            'H': '(?<hour>\\d{1,2})',
-            'hh': '(?<hour12>\\d{2})',
-            'h': '(?<hour12>\\d{1,2})',
-            'mm': '(?<minute>\\d{2})',
-            'ss': '(?<second>\\d{2})',
-            'a': '(?<ampm>AM|PM|am|pm)'
+        const runToPattern = (run: string): string => {
+            switch (run) {
+                case 'yyyy': return '(?<year>\\d{4})';
+                case 'yy': return '(?<year>\\d{2})';
+                case 'MMMM':
+                case 'MMM': return '(?<monthName>[a-zA-Zа-яА-Я]+)';
+                case 'MM': return '(?<month>\\d{2})';
+                case 'M': return '(?<month>\\d{1,2})';
+                case 'dd': return '(?<day>\\d{2})';
+                case 'd': return '(?<day>\\d{1,2})';
+                case 'HH': return '(?<hour>\\d{2})';
+                case 'H': return '(?<hour>\\d{1,2})';
+                case 'hh': return '(?<hour12>\\d{2})';
+                case 'h': return '(?<hour12>\\d{1,2})';
+                case 'mm': return '(?<minute>\\d{2})';
+                case 'ss': return '(?<second>\\d{2})';
+                case 'a': return '(?<ampm>AM|PM|am|pm)';
+                default:
+                    // невідомий run (напр. 'a' поза токеном 'a'? тут run завжди однолітерний або з довідника вище) —
+                    // на випадок появи літери, що не входить у жоден кейс, екрануємо посимвольно
+                    return run.replace(/[a-zA-Z]/g, c => c).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
         };
 
-        const tokens = Object.keys(tokenMap).sort((a, b) => b.length - a.length);
-        
-        let regexPattern = format;
-        tokens.forEach(token => {
-            const escapedToken = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            regexPattern = regexPattern.replace(new RegExp(escapedToken, 'g'), tokenMap[token]);
-        });
+        let regexPattern = '';
+        let i = 0;
+        while (i < format.length) {
+            const ch = format[i];
+            if (/[a-zA-Zа-яА-Я]/.test(ch)) {
+                let j = i + 1;
+                while (j < format.length && format[j] === ch) j++;
+                regexPattern += runToPattern(format.slice(i, j));
+                i = j;
+            } else {
+                regexPattern += ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                i++;
+            }
+        }
 
-        const regex = new RegExp(`^${regexPattern}$`);
+        let regex: RegExp;
+        try {
+            regex = new RegExp(`^${regexPattern}$`);
+        } catch {
+            throw new Error(`parseDate: "${dateString}" does not match format "${format}"`);
+        }
+
         const match = dateString.match(regex);
-
-        if (!match || !match.groups) return null;
+        if (!match || !match.groups) throw new Error(`parseDate: "${dateString}" does not match format "${format}"`);
 
         const groups = match.groups;
 
@@ -213,7 +231,7 @@ export class Utilities {
         } else if (groups['monthName']) {
             const monthsEn = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
             const monthsShortEn = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-            
+
             const lowerName = groups['monthName'].toLowerCase();
             let foundIdx = monthsEn.findIndex(m => m.startsWith(lowerName));
             if (foundIdx === -1) {
@@ -223,7 +241,7 @@ export class Utilities {
         }
 
         const day = groups['day'] ? parseInt(groups['day'], 10) : 1;
-        
+
         let hour = 0;
         if (groups['hour']) {
             hour = parseInt(groups['hour'], 10);
@@ -239,8 +257,8 @@ export class Utilities {
 
         const isoString = `${String(year).padStart(4, '0')}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}.000Z`;
         const utcDate = new Date(isoString);
-        
-        if (isNaN(utcDate.getTime())) return null;
+
+        if (isNaN(utcDate.getTime())) throw new Error(`parseDate: parsed date is invalid for "${dateString}" with format "${format}"`);
         if (!timeZone) return utcDate;
 
         try {
@@ -256,7 +274,7 @@ export class Utilities {
                 acc[p.type] = p.value;
                 return acc;
             }, {} as Record<string, string>);
-            
+
             const tzYear = parseInt(partValues['year'] || '0', 10);
             const tzMonth = parseInt(partValues['month'] || '1', 10) - 1;
             const tzDay = parseInt(partValues['day'] || '1', 10);
@@ -266,7 +284,7 @@ export class Utilities {
 
             const tzDateAsUtc = Date.UTC(tzYear, tzMonth, tzDay, tzHour, tzMinute, tzSecond);
             const targetAsUtc = Date.UTC(year, month, day, hour, minute, second);
-            
+
             const diffMs = targetAsUtc - tzDateAsUtc;
 
             return new Date(utcDate.getTime() + diffMs);

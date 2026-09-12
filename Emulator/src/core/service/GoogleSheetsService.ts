@@ -22,21 +22,26 @@ class GoogleSheetsService {
     /**
      * Отримує сирі значення з таблиці. Дату отримує у вигляді форматованого рядка.
      * @param spreadsheetId ідентифікатор електроної таблиці
-     * @param range діапазон значень
+     * @param range масив діапазонів або назв аркушів (наприклад, ['Sheet1', 'Sheet2!A1:B10'])
      * @returns діапозон зі значеннями
      */
-    async getValues(spreadsheetId: string, range: string): Promise<sheets_v4.Schema$ValueRange> {
+    async batchGetValues(spreadsheetId: string, ranges: string[]): Promise<sheets_v4.Schema$ValueRange[]> {
+        if (!ranges || ranges.length === 0) return [];
+
         try {
-            const response = await this.sheets.spreadsheets.values.get({
+            const response = await this.sheets.spreadsheets.values.batchGet({
                 spreadsheetId,
-                range,
+                ranges,
                 valueRenderOption: 'UNFORMATTED_VALUE',
                 dateTimeRenderOption: 'FORMATTED_STRING'
             });
 
-            return response.data;
+            return response.data.valueRanges || [];
         } catch (error) {
-            console.error(`Cannot read range from Google Sheet. SpreadsheetId: ${spreadsheetId} Range: ${range}`, error);
+            const rangesStr = ranges.length > 10
+                ? `${ranges.slice(0, 10).join(', ')}...`
+                : ranges.join(', ');
+            console.error(`Cannot read range from Google Sheet. SpreadsheetId: ${spreadsheetId} Range: ${rangesStr}`, error);
             throw error;
         }
     }

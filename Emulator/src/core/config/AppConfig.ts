@@ -23,7 +23,7 @@ const AppConfig = {
         activeSpreadsheetId: jsonConfig.gas.activeSpreadsheetId as string,
         defaultScriptProperty: jsonConfig.gas.defaultScriptProperty as Record<string,string>
     },
-    sync_sheets: jsonConfig.sync_sheets as Record<string, string[]>
+    sync_sheets: jsonConfig.sync_sheets as Record<string, string[] | string>
 }
 
 export default AppConfig;
