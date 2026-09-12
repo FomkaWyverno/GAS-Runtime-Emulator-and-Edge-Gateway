@@ -9,6 +9,13 @@ class PingPongService {
         this.tunnelURL = tunnelURL;
     }
 
+    /**
+     * Доступ до виклику пінгу для зовнішнього доступа
+     */
+    public async ping() {
+        this.pingServer(AppConfig.cloudflare.worker_url);
+    }
+
     private async pingServer(workerURL: string): Promise<void> {
         const response = await fetch(`${workerURL}/host-ping`, {
                 'method': 'POST',

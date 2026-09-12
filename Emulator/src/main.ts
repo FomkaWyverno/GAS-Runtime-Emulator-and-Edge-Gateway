@@ -3,6 +3,7 @@ import AppBootstrap from "./core/bootstrap/AppBootstrap.js";
 import CloudflareTunnelService from "./core/runtime/CloudflareTunnelService.js";
 import HTTPServer from "./core/runtime/HTTPServer.js";
 import PingPongService from "./core/runtime/PingPongService.js";
+import GoogleSheetsService from './core/service/GoogleSheetsService.ts';
 
 const PORT = 3000;
 
@@ -32,6 +33,11 @@ function registerStopCommand() {
     rl.on('line', async (line) => {
         const command = line.trim();
 
+        if (command === '/ping') {
+            PingPongService.ping();
+            return;
+        }
+
         if (command !== '/stop') {
             console.log(`Print /stop to stop program`);
             return;
@@ -46,6 +52,9 @@ function registerStopCommand() {
 
         console.log(`[Main] - Stop HTTP Server`);
         HTTPServer.stop();
+
+        console.log(`[Main] - Stop GoogleSheetService BatchUpdateWorker`);
+        GoogleSheetsService.stopBatchUpdateWorker();
 
         rl.close();
     });

@@ -1,7 +1,6 @@
 import { sheets_v4 } from "googleapis";
 import { GasAppendRowPayload, GasClearContentsPayload, GasDeleteColumnPayload, GasDeleteRowsPayload, GasEventsMap, GasInsertColumnsPayload, GasInsertSheetPayload as GasInsertSheetPayload, GasMoveColumnsPayload, GasUpdateRangePayload } from "../events/GasEventEmitter.js";
 import GoogleSheetsService from "./GoogleSheetsService.js";
-import RangeUtils from "../../emulator-utils/RangeUtils.js";
 import { Cell } from "../../emulator/@types/sheets/cell.js";
 
 type SyncTask = {
@@ -77,51 +76,24 @@ class GasSynchronizerService {
         const { spreadsheet_id, sheet_id, row, col, cells } = payload;
         console.log(`[GasSynchronizerService] - Start process event onUpdateRange (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id} row: ${row} col: ${col})`);
 
-        const metadata = await this.getSpreadsheetMetadata(spreadsheet_id);
-        //console.log(`[GasSynchronizerService] - SpreadsheetMetadata:`)
-        //console.log(JSON.stringify(spreadsheetMetadata, null, 2));
-        const sheet = metadata.sheets?.find(sheet => sheet.properties?.sheetId === sheet_id);
-        const sheetName = sheet?.properties?.title;
-        const gridProprties = sheet?.properties?.gridProperties;
-        const currentMaxRows = gridProprties?.rowCount; // Скільки у реальній гугл таблиці скільки максимум рядків.
-        const currentMaxCols = gridProprties?.columnCount;
+        GoogleSheetsService.lateUpdateValues(
+            spreadsheet_id,
+            sheet_id,
+            row - 1,
+            row - 1 + cells.length,
+            col - 1,
+            col - 1 + cells[0].length,
+            this.mapCells(cells)
+        );
 
-        if (!sheetName || !gridProprties
-            || currentMaxRows === null || currentMaxRows === undefined
-            || currentMaxCols === null || currentMaxCols === undefined
-        ) throw new Error(`Spreadsheet (spreadsheet_id: ${spreadsheet_id}) don't has sheet with sheet_id: ${sheet_id}`);
-
-        const rawValues = this.mapCells(cells);
-        const requiredMaxRow = row + rawValues.length - 1;
-
-        if (requiredMaxRow > currentMaxRows) { // Якщо потрібно, щоб у таблиці було більше ніж поточна кількість рядків, тоді збільшуємо
-            const rowsToAdd = requiredMaxRow - currentMaxRows;
-
-            console.log(`[GasSynchronizerService] - Range exceeds grid limit (${requiredMaxRow} > ${currentMaxRows}). Appending +${rowsToAdd} rows...`);
-
-            await GoogleSheetsService.insertRowsAtIndex(spreadsheet_id, sheet_id, currentMaxRows, requiredMaxRow);
-            this.spreadsheetMetadataMap.delete(spreadsheet_id); // Інвалідуємо кеш після розширення таблиці, оскільки властивості змінились
-        }
-
-        console.log(`[GasSynchronizerService] - Spreadsheet (${spreadsheet_id}) sheet: "${sheetName}" rows: ${currentMaxRows} cols: ${currentMaxCols}`);
-
-        const range = RangeUtils.toA1Notation({
-            sheetName: sheetName,
-            row: row,
-            column: col,
-            numColumns: rawValues[0].length,
-            numRows: rawValues.length
-        });
-
-        await GoogleSheetsService.updateValues(spreadsheet_id, range, rawValues);
-        console.log(`[GasSynchronizerService] - Successufully update range: ${range} for spreadsheet: ${metadata.properties?.title}`);
+        console.log(`[GasSynchronizerService] - Successufully update range: row: ${row}, col: ${col}, rowNums: ${cells.length}, colNums: ${cells[0].length}, for spreadsheet: ${spreadsheet_id}`);
     }
 
     private async onInsertColumns(payload: GasInsertColumnsPayload) {
         const { spreadsheet_id, sheet_id, column_index, num_columns } = payload;
         console.log(`[GasSynchronizerService] - Start process event onInsertColumns (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id} column_index: ${column_index} num_columns: ${num_columns})`);
 
-        await GoogleSheetsService.insertColumns(spreadsheet_id, sheet_id, column_index - 1, column_index + num_columns - 1);
+        GoogleSheetsService.lateInsertColumns(spreadsheet_id, sheet_id, column_index - 1, column_index + num_columns - 1);
         console.log(`[GasSynchronizerService] - Successufully insert at position ${column_index} ${num_columns} columns in spreadsheet_id: ${spreadsheet_id}.`);
     }
 
@@ -136,7 +108,7 @@ class GasSynchronizerService {
         const googleEndIndex = googleStartIndex + numCols;
         const googleDestinationIndex = destination_index - 1;
 
-        await GoogleSheetsService.moveColumns(
+        GoogleSheetsService.moveColumns(
             spreadsheet_id,
             sheet_id,
             googleStartIndex,
@@ -187,14 +159,14 @@ class GasSynchronizerService {
     private async onDeleteColumns(payload: GasDeleteColumnPayload) {
         const { spreadsheet_id, sheet_id, column_position, how_many } = payload;
         console.log(`[GasSynchronizerService] - Start process event onDeleteColumns (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id} columnPosition: ${column_position} howMany: ${how_many})`);
-        await GoogleSheetsService.deleteColumns(spreadsheet_id, sheet_id, column_position - 1, how_many);
+        GoogleSheetsService.lateDeleteColumns(spreadsheet_id, sheet_id, column_position - 1, how_many);
         console.log(`[GasSynchronizerService] - Successufully delete columns in spreadsheet_id: "${spreadsheet_id}" for sheet_id: "${sheet_id}" Column position: "${column_position}" how many - "${how_many}"`)
     }
 
     private async onDeleteRows(payload: GasDeleteRowsPayload) {
         const { spreadsheet_id, sheet_id, row_position, how_many } = payload;
         console.log(`[GasSynchronizerService] - Start process event onDeleteRows (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id} rowPosition: ${row_position} howMany: ${how_many})`);
-        await GoogleSheetsService.deleteRows(spreadsheet_id, sheet_id, row_position - 1, how_many);
+        GoogleSheetsService.lateDeleteRows(spreadsheet_id, sheet_id, row_position - 1, how_many);
         console.log(`[GasSynchronizerService] - Successufully delete rows in spreadsheet_id: "${spreadsheet_id}" for sheet_id: "${sheet_id}" Row position: "${row_position}" how many - "${how_many}"`)
     }
 
@@ -202,10 +174,10 @@ class GasSynchronizerService {
         const { spreadsheet_id, sheet_id, sheet_name, sheet_index, template_sheet_id } = payload;
         console.log(`[GasSynchronizerService] - Start process event onInsertSheet (spreadsheet_id: ${spreadsheet_id} newSheetName: ${sheet_name} newSheetId: ${sheet_id})`);
         if (template_sheet_id !== undefined) {
-            await GoogleSheetsService.duplicateSheet(spreadsheet_id, template_sheet_id, sheet_index, sheet_id, sheet_name);
+            await GoogleSheetsService.lateDuplicateSheet(spreadsheet_id, template_sheet_id, sheet_index, sheet_id, sheet_name);
             console.log(`[GasSynchronizerService] - Successufully duplicate sheet (new SheetName: ${sheet_name} new SheetId: ${sheet_id}) in spreadsheet: "${spreadsheet_id}"`);
         } else {
-            await GoogleSheetsService.insertSheet(spreadsheet_id, sheet_id, sheet_name, sheet_index);
+            GoogleSheetsService.lateInsertSheet(spreadsheet_id, sheet_id, sheet_name, sheet_index);
             console.log(`[GasSynchronizerService] - Successufully insert new sheet (spreadsheet_id: ${spreadsheet_id} SheetName: ${sheet_name} SheetId: ${sheet_id}) in spreadsheet: "${spreadsheet_id}"`);
         }
         // Видаляємо, оскільки таблиця має тепер ще один аркуш, і кеш вже не валідний
