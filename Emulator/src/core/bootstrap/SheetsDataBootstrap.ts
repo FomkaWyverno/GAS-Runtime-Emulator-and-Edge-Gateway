@@ -5,6 +5,7 @@ import { BootStrap } from "./Bootstrap.js";
 import Database from "../database/Database.js";
 import { CellValueType } from "../../emulator/@types/sheets/cell.entity.js";
 import CellUtil from "../utils/CellUtil.js";
+import SpreadsheetMetaRegistry from "../service/SpreadsheetMetaRegistry.ts";
 
 interface SheetValues {
     spreadsheetId: string;
@@ -51,6 +52,9 @@ class SheetsDataBootstrap implements BootStrap {
             this.createSheetToDatabase(spreadsheetId, syncSheets);
             console.log(`[SheetsDataBootstrap] - Insertions data from sheets to Database`);
             this.bulkInsertSheetsValuesToDatabase(valueSheets);
+
+            console.log(`[SheetsDataBootstrap] - Write spreadsheet metadata to SpreadsheetMetaRegistry for ${spreadsheetId}`);
+            SpreadsheetMetaRegistry.setSpreadsheetMeta(spreadsheetId, syncSheets);
         }
     }
 

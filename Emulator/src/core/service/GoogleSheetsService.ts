@@ -1,8 +1,11 @@
 import { google, sheets_v4 } from "googleapis";
-import { GaxiosResponseWithHTTP2 } from "googleapis-common/build/src/http2.js";
+import SpreadsheetMetaRegistry from "./SpreadsheetMetaRegistry.ts";
 
 
 class GoogleSheetsService {
+    public static readonly DEFAULT_NEW_SHEET_ROW_COUNT = 1000;
+    public static readonly DEFAULT_NEW_SHEET_COLUMN_COUNT = 26;
+
     private sheets: sheets_v4.Sheets;
     /** Ключ це spreadsheet_id значення Реквест оновлення для батчу */
     private updateQueue: Map<string, sheets_v4.Schema$Request[]> = new Map();
@@ -165,6 +168,57 @@ class GoogleSheetsService {
     }
 
     /**
+     * Безпечно ставить у чергу оновлення діапазону з автоматичним розширенням сітки за потреби
+     * @param spreadsheetId ідентифікатор ел.таблиці
+     * @param sheetId ідентифікатор аркуша
+     * @param startRowIndex індекс рядка початку діапазону
+     * @param endRowIndex індекс рядка закінчення діапазону
+     * @param startColumnIndex індекс колонки початку діапазону
+     * @param endColumnIndex індекс колонки закінчення діапазону
+     */
+    public lateUpdateValuesEnsureFit(
+        spreadsheetId: string,
+        sheetId: number,
+        startRowIndex: number,
+        endRowIndex: number,
+        startColumnIndex: number,
+        endColumnIndex: number,
+        values: any[][]
+    ) {
+        // Отримуємо метадані аркуша з нашого реєстру в пам'яті
+        const sheetMeta = SpreadsheetMetaRegistry.getSheetMeta(spreadsheetId, sheetId);
+
+        if (sheetMeta) {
+            // Перевіряємо, чи виходить кінцевий рядок за поточні межі сітки
+            if (endRowIndex > sheetMeta.rowCount) {
+                const rowsNeeded = endRowIndex - sheetMeta.rowCount;
+                console.log(`[GoogleSheetsService] - Grid limit exceeded! Current rowCount: ${sheetMeta.rowCount}, target endRow: ${endRowIndex}. Appending ${rowsNeeded} rows...`);
+
+                this.lateAppendRows(spreadsheetId, sheetId, rowsNeeded);
+            }
+
+            // Аналогічно для колонок, якщо раптом вилітаємо за ширину
+            if (endColumnIndex > sheetMeta.columnCount) {
+                const colsNeeded = endColumnIndex - sheetMeta.columnCount;
+                console.log(`[GoogleSheetsService] - Grid limit exceeded! Current columnCount: ${sheetMeta.columnCount}, target endCol: ${endColumnIndex}. Appending ${colsNeeded} cols...`);
+
+                this.lateAppendColumns(spreadsheetId, sheetId, colsNeeded);
+            }
+        }
+
+        // Викликаємо звичайний базовий метод запису
+        this.lateUpdateValues(
+            spreadsheetId,
+            sheetId,
+            startRowIndex,
+            endRowIndex,
+            startColumnIndex,
+            endColumnIndex,
+            values
+        );
+    }
+
+    /**
      * Ставить у чергу для Батчу на Оновлення діапазон данних
      * @param spreadsheetId ідентифікатор ел.таблиці
      * @param sheetId ідентифікатор аркуша
@@ -207,14 +261,12 @@ class GoogleSheetsService {
                                     }
                                     break
                                 }
-
                                 default: {
                                     extendedValue = {
                                         "stringValue": String(cell)
                                     }
                                     break
                                 }
-
                             }
 
                             return {
@@ -248,9 +300,10 @@ class GoogleSheetsService {
         }
 
         this.appendRequestToUpdateBatch(spreadsheetId, request);
+        SpreadsheetMetaRegistry.addColsLocally(spreadsheetId, sheetId, endIndex - startIndex);
     }
 
-    public lateInsertRowsAtIndex(
+    public lateInsertRowsIndex(
         spreadsheet_id: string,
         sheet_id: number,
         start_index: number,
@@ -269,6 +322,7 @@ class GoogleSheetsService {
         }
 
         this.appendRequestToUpdateBatch(spreadsheet_id, request);
+        SpreadsheetMetaRegistry.addRowsLocally(spreadsheet_id, sheet_id, end_index - start_index)
     }
 
     public moveColumns(
@@ -293,37 +347,46 @@ class GoogleSheetsService {
         this.appendRequestToUpdateBatch(spreadsheetId, request)
     }
 
-    public async appendRow(
+    /**
+     * Ставить у чергу для батчу очищення вмісту клітинок у діапазоні
+     * @param spreadsheetId ідентифікатор ел.таблиці
+     * @param sheetId ідентифікатор аркуша
+     * @param startRowIndex індекс рядка початку діапазону
+     * @param endRowIndex індекс рядка закінчення діапазону
+     * @param startColumnIndex індекс колонки початку діапазону
+     * @param endColumnIndex індекс колонки закінчення діапазону
+     */
+    public lateClearContents(
         spreadsheetId: string,
-        range: string,
-        values: any[][]
-    ): Promise<sheets_v4.Schema$AppendValuesResponse> {
-        const response = await this.sheets.spreadsheets.values.append({
-            spreadsheetId: spreadsheetId,
-            range: range,
-            valueInputOption: 'USER_ENTERED',
-            insertDataOption: 'INSERT_ROWS',
-            requestBody: {
-                values: values
+        sheetId: number,
+        startRowIndex: number,
+        endRowIndex: number,
+        startColumnIndex: number,
+        endColumnIndex: number
+    ) {
+        const request: sheets_v4.Schema$Request = {
+            updateCells: {
+                range: {
+                    sheetId,
+                    startRowIndex,
+                    endRowIndex,
+                    startColumnIndex,
+                    endColumnIndex,
+                },
+                fields: "userEnteredValue"
             }
-        });
+        }
 
-        return response.data;
-
+        this.appendRequestToUpdateBatch(spreadsheetId, request);
     }
 
-    public async clearContents(
-        spreadsheetId: string,
-        range: string
-    ): Promise<sheets_v4.Schema$ClearValuesResponse> {
-        const response = await this.sheets.spreadsheets.values.clear({
-            spreadsheetId: spreadsheetId,
-            range: range
-        });
-
-        return response.data;
-    }
-
+    /**
+     * Ставить у чергу для батчу видалення колонок
+     * @param spreadsheet_id ідентифікатор ел.таблиці
+     * @param sheet_id ідентифікатор аркуша
+     * @param column_index індекс колонки, з якої починається видалення
+     * @param how_many кількість колонок, які треба видалити
+     */
     public lateDeleteColumns(
         spreadsheet_id: string,
         sheet_id: number,
@@ -342,8 +405,16 @@ class GoogleSheetsService {
         }
 
         this.appendRequestToUpdateBatch(spreadsheet_id, request);
+        SpreadsheetMetaRegistry.removeColsLocally(spreadsheet_id, sheet_id, how_many);
     }
 
+    /**
+     * Ставить у чергу для батчу видалення рядків
+     * @param spreadsheet_id ідентифікатор ел.таблиці
+     * @param sheet_id ідентифікатор аркуша
+     * @param row_index індекс рядка, з якого починається видалення
+     * @param how_many кількість рядків, які треба видалити
+     */
     public async lateDeleteRows(
         spreadsheet_id: string,
         sheet_id: number,
@@ -362,8 +433,63 @@ class GoogleSheetsService {
         }
 
         this.appendRequestToUpdateBatch(spreadsheet_id, request);
+        SpreadsheetMetaRegistry.removeRowsLocally(spreadsheet_id, sheet_id, how_many)
     }
 
+    /**
+     * Ставить у чергу для батчу розширення сітки додаванням рядків
+     * @param spreadsheetId ідентифікатор ел.таблиці
+     * @param sheetId ідентифікатор аркуша
+     * @param howMany кількість рядків, які треба додати
+     */
+    public lateAppendRows(
+        spreadsheetId: string,
+        sheetId: number,
+        howMany: number
+    ) {
+        const request: sheets_v4.Schema$Request = {
+            appendDimension: {
+                sheetId: sheetId,
+                dimension: "ROWS",
+                length: howMany
+            }
+        };
+
+        this.appendRequestToUpdateBatch(spreadsheetId, request);
+        // Одразу ж проактивно оновлюємо локальний стейт у реєстрі
+        SpreadsheetMetaRegistry.addRowsLocally(spreadsheetId, sheetId, howMany);
+    }
+
+    /**
+     * Ставить у чергу для батчу розширення сітки додаванням колонок
+     * @param spreadsheetId ідентифікатор ел.таблиці
+     * @param sheetId ідентифікатор аркуша
+     * @param howMany кількість колонок, які треба додати
+     */
+    public lateAppendColumns(
+        spreadsheetId: string,
+        sheetId: number,
+        howMany: number
+    ) {
+        const request: sheets_v4.Schema$Request = {
+            appendDimension: {
+                sheetId: sheetId,
+                dimension: "COLUMNS",
+                length: howMany
+            }
+        };
+
+        this.appendRequestToUpdateBatch(spreadsheetId, request);
+        SpreadsheetMetaRegistry.addColsLocally(spreadsheetId, sheetId, howMany);
+    }
+
+    /**
+     * Ставить у чергу для батчу додавання нового аркуша
+     * @param spreadsheet_id ідентифікатор ел.таблиці
+     * @param sheetId ідентифікатор, який треба присвоїти новому аркушу
+     * @param title назва нового аркуша
+     * @param index індекс, на який треба вставити новий аркуш
+     */
     public lateInsertSheet(
         spreadsheet_id: string,
         sheetId: number,
@@ -381,8 +507,23 @@ class GoogleSheetsService {
         }
 
         this.appendRequestToUpdateBatch(spreadsheet_id, request);
+        SpreadsheetMetaRegistry.registerSheetLocally(
+            spreadsheet_id,
+            sheetId,
+            title,
+            GoogleSheetsService.DEFAULT_NEW_SHEET_ROW_COUNT,
+            GoogleSheetsService.DEFAULT_NEW_SHEET_COLUMN_COUNT
+        );
     }
 
+    /**
+     * Ставить у чергу для батчу дублювання аркуша
+     * @param spreadsheetId ідентифікатор ел.таблиці
+     * @param sourceSheetId ідентифікатор аркуша-джерела, який треба дублювати
+     * @param insertSheetIndex індекс, на який треба вставити новий (дубльований) аркуш
+     * @param newSheetId ідентифікатор, який треба присвоїти новому аркушу
+     * @param newSheetName назва нового аркуша
+     */
     public lateDuplicateSheet(
         spreadsheetId: string,
         sourceSheetId: number,
@@ -400,6 +541,14 @@ class GoogleSheetsService {
         }
 
         this.appendRequestToUpdateBatch(spreadsheetId, request);
+        const sourceMeta = SpreadsheetMetaRegistry.getSheetMeta(spreadsheetId, sourceSheetId);
+        SpreadsheetMetaRegistry.registerSheetLocally(
+            spreadsheetId,
+            newSheetId,
+            newSheetName,
+            sourceMeta?.rowCount ?? GoogleSheetsService.DEFAULT_NEW_SHEET_ROW_COUNT,
+            sourceMeta?.columnCount ?? GoogleSheetsService.DEFAULT_NEW_SHEET_COLUMN_COUNT
+        );
     }
 
     /**

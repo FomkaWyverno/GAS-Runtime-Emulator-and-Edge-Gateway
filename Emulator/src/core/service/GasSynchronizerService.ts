@@ -2,6 +2,7 @@ import { sheets_v4 } from "googleapis";
 import { GasAppendRowPayload, GasClearContentsPayload, GasDeleteColumnPayload, GasDeleteRowsPayload, GasEventsMap, GasInsertColumnsPayload, GasInsertSheetPayload as GasInsertSheetPayload, GasMoveColumnsPayload, GasUpdateRangePayload } from "../events/GasEventEmitter.js";
 import GoogleSheetsService from "./GoogleSheetsService.js";
 import { Cell } from "../../emulator/@types/sheets/cell.js";
+import SpreadsheetMetaRegistry from "./SpreadsheetMetaRegistry.ts";
 
 type SyncTask = {
     [K in keyof GasEventsMap]: {
@@ -76,7 +77,7 @@ class GasSynchronizerService {
         const { spreadsheet_id, sheet_id, row, col, cells } = payload;
         console.log(`[GasSynchronizerService] - Start process event onUpdateRange (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id} row: ${row} col: ${col})`);
 
-        GoogleSheetsService.lateUpdateValues(
+        GoogleSheetsService.lateUpdateValuesEnsureFit(
             spreadsheet_id,
             sheet_id,
             row - 1,
@@ -125,18 +126,19 @@ class GasSynchronizerService {
 
         if (!cells || cells.length === 0) return;
 
-        const spreadsheetMetadata = await this.getSpreadsheetMetadata(spreadsheet_id);
-        const sheet = spreadsheetMetadata.sheets?.find(s => s.properties?.sheetId === sheet_id);
-
-        if (!sheet || !sheet.properties?.title) throw new Error(`Spreadsheet doesn't have a sheet with sheet_id: ${sheet_id}`);
-
-        const sheetName = sheet.properties.title;
-
         const rawValues = this.mapCells([cells]);
-        const range = `'${sheetName}'`;
 
-        await GoogleSheetsService.appendRow(spreadsheet_id, range, [rawValues]);
-        console.log(`[GasSynchronizerService] - Successufully append row in sheet '${sheetName}' in spreadsheet_id: ${spreadsheet_id}`);
+        GoogleSheetsService.lateUpdateValuesEnsureFit(
+            spreadsheet_id,
+            sheet_id,
+            row - 1,
+            row,
+            0,
+            cells.length,
+            rawValues
+        )
+
+        console.log(`[GasSynchronizerService] - Successfully queued append row in sheet_id: ${sheet_id} in spreadsheet_id: ${spreadsheet_id}`);
 
     }
 
@@ -144,16 +146,21 @@ class GasSynchronizerService {
         const { spreadsheet_id, sheet_id } = payload;
         console.log(`[GasSynchronizerService] - Start process event onClearContents (spreadsheet_id: ${spreadsheet_id} sheetId: ${sheet_id})`);
 
-        const spreadsheetMetadata = await this.getSpreadsheetMetadata(spreadsheet_id);
-        const sheet = spreadsheetMetadata.sheets?.find(s => s.properties?.sheetId === sheet_id);
+        const metaSheet = SpreadsheetMetaRegistry.getSheetMeta(spreadsheet_id, sheet_id);
 
-        if (!sheet || !sheet.properties?.title) throw new Error(`Spreadsheet doesn't have a sheet with sheet_id: ${sheet_id}`);
-
-        const sheetName = sheet.properties.title;
-        const range = `'${sheetName}'`;
-
-        await GoogleSheetsService.clearContents(spreadsheet_id, range);
-        console.log(`[GasSynchronizerService] - Successufully clear contents in sheet '${sheetName}' in spreadsheet_id: ${spreadsheet_id}`);
+        if (!metaSheet) {
+            throw new Error(`[GasSynchronizerService] - Cannot clear contents: no sheet meta found for spreadsheet_id: ${spreadsheet_id}, sheet_id: ${sheet_id}`);
+        }
+        
+        GoogleSheetsService.lateClearContents(
+            spreadsheet_id,
+            sheet_id,
+            0,
+            metaSheet.rowCount,
+            0,
+            metaSheet.columnCount
+        );
+        console.log(`[GasSynchronizerService] - Successfully queued clear contents in sheet_id: ${sheet_id} in spreadsheet_id: ${spreadsheet_id}`);
     }
 
     private async onDeleteColumns(payload: GasDeleteColumnPayload) {
@@ -180,24 +187,6 @@ class GasSynchronizerService {
             GoogleSheetsService.lateInsertSheet(spreadsheet_id, sheet_id, sheet_name, sheet_index);
             console.log(`[GasSynchronizerService] - Successufully insert new sheet (spreadsheet_id: ${spreadsheet_id} SheetName: ${sheet_name} SheetId: ${sheet_id}) in spreadsheet: "${spreadsheet_id}"`);
         }
-        // Видаляємо, оскільки таблиця має тепер ще один аркуш, і кеш вже не валідний
-        this.spreadsheetMetadataMap.delete(spreadsheet_id);
-    }
-
-    /**
-     * Шукає у кеші метадані ел. таблиці, якщо її немає, тоді робить запит, та повертає метадані
-     * @param spreadsheetId ідентифікатор ел. таблиці
-     * @returns Метадані ел.таблиці
-     */
-    private async getSpreadsheetMetadata(spreadsheetId: string): Promise<sheets_v4.Schema$Spreadsheet> {
-        if (this.spreadsheetMetadataMap.has(spreadsheetId)) return this.spreadsheetMetadataMap.get(spreadsheetId)!;
-
-        console.log(`[GasSynchronizerService] - Don't has in map SpreadsheetMetadata for "${spreadsheetId}"`);
-        console.log(`[GasSynchronizerService] - Start pull metadata for spreadsheet: ${spreadsheetId}`);
-        const spreadsheetMetadata = await GoogleSheetsService.getSpreadsheet(spreadsheetId);
-        this.spreadsheetMetadataMap.set(spreadsheetId, spreadsheetMetadata);
-
-        return spreadsheetMetadata;
     }
 
     /**
