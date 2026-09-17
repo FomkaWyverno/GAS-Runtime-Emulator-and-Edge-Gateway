@@ -87,7 +87,7 @@ class GasSynchronizerService {
             this.mapCells(cells)
         );
 
-        console.log(`[GasSynchronizerService] - Successufully update range: row: ${row}, col: ${col}, rowNums: ${cells.length}, colNums: ${cells[0].length}, for spreadsheet: ${spreadsheet_id}`);
+        console.log(`[GasSynchronizerService] - Successufully queued update range: row: ${row}, col: ${col}, rowNums: ${cells.length}, colNums: ${cells[0].length}, for spreadsheet: ${spreadsheet_id}`);
     }
 
     private async onInsertColumns(payload: GasInsertColumnsPayload) {
